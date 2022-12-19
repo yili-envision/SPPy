@@ -152,14 +152,11 @@ class EigenFuncExp(BaseSolver):
             if not self.b_model.isothermal:
                 if iter_ > 0:
                     t_prev = self.t[iter_-1]
-                    T_prev = T_list[iter_-1]
                     dt = t_ - t_prev
                     t_model = Lumped(b_cell=self.b_cell)
                     # Solve battery cell surface temperature
                     func_T = t_model.heat_balance(V=V, I=I)
-                    self.b_cell.T = ode_solvers.euler(func=func_T, t_prev=t_prev, y_prev=T_prev, step_size=dt)
-                    # # Update electrode temp
-                    # self.b_cell.elec_p.T_K = self.b_cell.elec_n.T_K = self.b_cell.T_K
+                    self.b_cell.T = ode_solvers.euler(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
                 # T_list.append(self.b_cell.T_K)
             T_list.append(self.b_cell.T)
 
