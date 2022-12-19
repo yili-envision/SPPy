@@ -1,0 +1,167 @@
+import numpy as np
+from scipy.optimize import bisect
+from tqdm import tqdm
+
+from src.solvers.base import BaseSolver, timer
+from src.calc_helpers.constants import Constants
+from src.calc_helpers import ode_solvers
+from src.solution import Solution
+from src.warnings_and_exceptions.custom_warnings import *
+from src.warnings_and_exceptions.custom_exceptions import *
+from src.models.thermal import Lumped
+
+
+class EigenFuncExp(BaseSolver):
+    """
+    Mathematical Formulation Reference:
+    1. Guo, M., Sikha, G., & White, R. E. (2011). Single-Particle Model for a Lithium-Ion Cell: Thermal Behavior.
+    Journal of The Electrochemical Society, 158(2), A122. https://doi.org/10.1149/1.3521314/XML
+    """
+    def __init__(self, b_cell, b_model, N, **operating_conditions):
+        super().__init__(b_cell, b_model, **operating_conditions)
+        self.N = N
+
+    @staticmethod
+    def lambda_func(x):
+        return np.sin(x) - x * np.cos(x)
+
+    def lambda_bounds(self):
+        return [(np.pi + np.pi * N_, 2 * np.pi + np.pi * N_) for N_ in range(self.N)]
+
+    @property
+    def lambda_roots(self):
+        bounds = self.lambda_bounds()
+        return [bisect(EigenFuncExp.lambda_func, bounds[N_][0], bounds[N_][1]) for N_ in range(self.N)]
+
+    def scaled_j(self, I, R, S, D, c_s_max, electrode_type):
+        if electrode_type == 'p':
+            return -I*R / (Constants.F * S * D * c_s_max)
+        elif electrode_type == 'n':
+            return I*R / (Constants.F * S * D * c_s_max)
+
+    @staticmethod
+    def u_k_expression(lambda_k, D, R, scaled_flux):
+        def u_k_odeFunc(x, t):
+            return -(lambda_k ** 2) * D * x / (R ** 2) + 2 * D * scaled_flux / (R ** 2)
+        return u_k_odeFunc
+
+    def solve_u_k_j(self, root_value, t_prev, u_k_j_prev, scaled_j, dt, electrode_type):
+        if electrode_type == 'p':
+            u_k_p_func = EigenFuncExp.u_k_expression(lambda_k=root_value, D=self.b_cell.elec_p.D,
+                                                     R=self.b_cell.elec_p.R, scaled_flux=scaled_j)
+            return ode_solvers.rk4(func=u_k_p_func, t_prev=t_prev, y_prev=u_k_j_prev, step_size=dt)
+        elif electrode_type == 'n':
+            u_k_n_func = EigenFuncExp.u_k_expression(lambda_k=root_value, D=self.b_cell.elec_n.D,
+                                                     R=self.b_cell.elec_n.R, scaled_flux=scaled_j)
+            return ode_solvers.rk4(func=u_k_n_func, t_prev=t_prev, y_prev=u_k_j_prev, step_size=dt)
+        else:
+            raise InvalidElectrodeType
+
+    def get_summation_term(self, t_prev, dt, u_k_p, u_k_n, scaled_j_p, scaled_j_n):
+        sum_term_p = 0
+        sum_term_n = 0
+        # Solve for the summation term
+        for iter_root, root_value in enumerate(self.lambda_roots):
+            # sum term for the positive electrode
+            u_k_p[iter_root] = self.solve_u_k_j(root_value=root_value, t_prev=t_prev, u_k_j_prev=u_k_p[iter_root],
+                                                scaled_j=scaled_j_p, dt=dt,
+                                                electrode_type=self.b_cell.elec_p.electrode_type)
+            sum_term_p += u_k_p[iter_root] - (2 * scaled_j_p / (root_value ** 2))
+
+            # sum term for the negative electrode
+            u_k_n[iter_root] = self.solve_u_k_j(root_value=root_value, t_prev=t_prev, u_k_j_prev=u_k_n[iter_root],
+                                                scaled_j=scaled_j_n, dt=dt,
+                                                electrode_type=self.b_cell.elec_n.electrode_type)
+            sum_term_n += u_k_n[iter_root] - (2 * scaled_j_n / (root_value ** 2))
+        return u_k_p, u_k_n, sum_term_p, sum_term_n
+
+    @timer
+    def solve(self, sol_name = None):
+        x_p_list, x_n_list, V_list, cap_list = [], [], [], []
+        T_list = []
+        integ_term_p = 0
+        integ_term_n = 0
+        u_k_p = np.zeros(self.N)
+        u_k_n = np.zeros(self.N)
+        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC
+        cap = 0
+        for iter_, t_ in enumerate(tqdm(self.t)):
+            I = self.I[iter_]
+            if iter_ > 0:
+                t_prev = self.t[iter_-1]
+                dt = t_ - t_prev
+
+                # Calc total electrode surface flux
+                scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
+                                           c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
+                scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
+                                           c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
+
+                # # Account for SEI growth
+                # if self.b_model.SEI_growth:
+                #     self.SEI_model.solve(I=I, dt=dt)
+                #     self.b_cell.R_cell += self.SEI_model.resistance
+                #     scaled_j_n -= self.SEI_model.j_s_prev
+
+                # Calc summation term
+                u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
+                                                                               scaled_j_n)
+
+                # calc integration term
+                integ_term_p += 3*(self.b_cell.elec_p.D * scaled_j_p/(self.b_cell.elec_p.R**2))*dt
+                integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
+
+                # Solve for x_p_surf
+                self.b_cell.elec_p.SOC = x_p_init + scaled_j_p/5 + integ_term_p + sum_term_p
+
+                # Solve for x_n_surf
+                self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n
+
+                # # Account for SEI growth
+                # if self.b_model.SEI_growth:
+                #     self.SEI_model.solve(I=I, dt=dt)
+                #     self.b_cell.R_cell += self.SEI_model.resistance
+
+            # Calc V
+            m_p = self.b_model.m(I= I, k=self.b_cell.elec_p.k , S=self.b_cell.elec_p.S, c_e= self.b_cell.electrolyte.conc,
+                                 c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
+            m_n = self.b_model.m(I= I, k=self.b_cell.elec_n.k , S=self.b_cell.elec_n.S, c_e= self.b_cell.electrolyte.conc,
+                                 c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
+            V = self.b_model.calc_term_V(p_OCP= self.b_cell.elec_p.OCP,
+                                         n_OCP= self.b_cell.elec_n.OCP,
+                                         m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
+                                         T=self.b_cell.T, I= I)
+
+            if V < self.b_cell.V_min:
+                threshold_potential_warning()
+                break
+
+            # Calc capacity
+            if iter_ == 0:
+                cap = 0
+            else:
+                cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
+
+            # Update results lists
+            x_p_list.append(self.b_cell.elec_p.SOC)
+            x_n_list.append(self.b_cell.elec_n.SOC)
+            V_list.append(V)
+            cap_list.append(cap)
+
+            # Calc temp and update T_list if not isothermal
+            if not self.b_model.isothermal:
+                if iter_ > 0:
+                    t_prev = self.t[iter_-1]
+                    T_prev = T_list[iter_-1]
+                    dt = t_ - t_prev
+                    t_model = Lumped(b_cell=self.b_cell)
+                    # Solve battery cell surface temperature
+                    func_T = t_model.heat_balance(V=V, I=I)
+                    self.b_cell.T = ode_solvers.euler(func=func_T, t_prev=t_prev, y_prev=T_prev, step_size=dt)
+                    # # Update electrode temp
+                    # self.b_cell.elec_p.T_K = self.b_cell.elec_n.T_K = self.b_cell.T_K
+                # T_list.append(self.b_cell.T_K)
+            T_list.append(self.b_cell.T)
+
+        return Solution(t=self.t, I=self.I, V=V_list, x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
+                        name= sol_name)
