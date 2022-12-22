@@ -15,6 +15,10 @@ class SPModel:
         self.degradation = degradation
 
     @staticmethod
+    def SOC(c, c_max):
+        return c/c_max
+
+    @staticmethod
     def j(I, S, electrode_type):
         if electrode_type == 'p':
             return I/(Constants.F * S)
