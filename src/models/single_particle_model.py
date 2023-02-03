@@ -12,7 +12,7 @@ class SPModel:
             raise TypeError("degradation argument needs to be a bool type.")
         # Assign class attributes.
         self.isothermal = isothermal
-        self.degradation = degradation
+        self.SEI_growth = degradation
 
     @staticmethod
     def SOC(c, c_max):
@@ -27,9 +27,9 @@ class SPModel:
         else:
             raise ValueError("Invalid Electrode Type")
 
-    # @staticmethod
-    # def scaled_j(I, S, R, D, c_max, electrode_type):
-    #     return SPModel.j(I=I, S=S, electrode_type=electrode_type) * R / (D * c_max)
+    @staticmethod
+    def scaled_j(I, S, R, D, c_max, electrode_type):
+        return SPModel.j(I=I, S=S, electrode_type=electrode_type) * R / (D * c_max)
 
     def m(self, I, k, S, c_max, SOC, c_e):
         return I/(Constants.F * k * S * c_max * (c_e ** 0.5) * ((1 - SOC) ** 0.5) * (SOC ** 0.5))

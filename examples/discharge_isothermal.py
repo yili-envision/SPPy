@@ -1,17 +1,15 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
 from file_path_variables import *
 from data.test import funcs
 from src.battery_components.battery_cell import BatteryCell
 from src.models.single_particle_model import SPModel
-from src.solvers.FD import FiniteDifferences
+from src.solvers.eigen_func_exp import EigenFuncExp
+from src.cycler.discharge import Discharge
 
 
 # Operating parameters
-t = np.arange(0, 4000, 1)
-I = -1.656 * np.ones(len(t))
+I = 1.656
 T = 298.15
+V_min = 3
 
 # Modelling parameters
 SOC_init_p, SOC_init_n = 0.4956, 0.7568 # conditions in the literature source. Guo et al
@@ -24,11 +22,9 @@ cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP
 model = SPModel(isothermal=True, degradation=False)
 
 # set-up solver and solve
-solver = FiniteDifferences(b_cell= cell, b_model= model, N=5, t= t, I= I)
-c_n = solver.solve()
-#
-# # Plot
-# sol.comprehensive_plot()
+dc = Discharge(discharge_current=I, V_min=V_min)
+solver = EigenFuncExp(b_cell= cell, b_model= model, N=5)
+sol = solver.solve(cycler=dc)
 
-plt.plot(c_n)
-plt.show()
+# Plot
+sol.comprehensive_plot()

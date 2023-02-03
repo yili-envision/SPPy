@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.optimize import bisect
-from tqdm import tqdm
 
 from src.solvers.base import BaseSolver, timer
 from src.calc_helpers.constants import Constants
@@ -9,6 +8,7 @@ from src.solution import Solution
 from src.warnings_and_exceptions.custom_warnings import *
 from src.warnings_and_exceptions.custom_exceptions import *
 from src.models.thermal import Lumped
+from src.cycler.base import BaseCycler
 
 
 class EigenFuncExp(BaseSolver):
@@ -17,8 +17,8 @@ class EigenFuncExp(BaseSolver):
     1. Guo, M., Sikha, G., & White, R. E. (2011). Single-Particle Model for a Lithium-Ion Cell: Thermal Behavior.
     Journal of The Electrochemical Society, 158(2), A122. https://doi.org/10.1149/1.3521314/XML
     """
-    def __init__(self, b_cell, b_model, N, **operating_conditions):
-        super().__init__(b_cell, b_model, **operating_conditions)
+    def __init__(self, b_cell, b_model, N, **SEI_model):
+        super().__init__(b_cell, b_model, **SEI_model)
         self.N = N
 
     @staticmethod
@@ -76,89 +76,226 @@ class EigenFuncExp(BaseSolver):
         return u_k_p, u_k_n, sum_term_p, sum_term_n
 
     @timer
-    def solve(self, sol_name = None):
+    def solve(self, cycler, sol_name = None):
+        if not isinstance(cycler, BaseCycler):
+            raise TypeError("cycler needs to be a Cycler object.")
+        # initialize result storage lists
         x_p_list, x_n_list, V_list, cap_list = [], [], [], []
+        cycle_list = []
+        step_name_list = []
+        t_list = []
+        I_list = []
         T_list = []
         integ_term_p = 0
         integ_term_n = 0
         u_k_p = np.zeros(self.N)
         u_k_n = np.zeros(self.N)
         x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC
+        # intial cap
         cap = 0
-        for iter_, t_ in enumerate(tqdm(self.t)):
-            I = self.I[iter_]
-            if iter_ > 0:
-                t_prev = self.t[iter_-1]
-                dt = t_ - t_prev
-
-                # Calc total electrode surface flux
-                scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
-                                           c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
-                scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
-                                           c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
-
-                # # Account for SEI growth
-                # if self.b_model.SEI_growth:
-                #     self.SEI_model.solve(I=I, dt=dt)
-                #     self.b_cell.R_cell += self.SEI_model.resistance
-                #     scaled_j_n -= self.SEI_model.j_s_prev
-
-                # Calc summation term
-                u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
-                                                                               scaled_j_n)
-
-                # calc integration term
-                integ_term_p += 3*(self.b_cell.elec_p.D * scaled_j_p/(self.b_cell.elec_p.R**2))*dt
-                integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
-
-                # Solve for x_p_surf
-                self.b_cell.elec_p.SOC = x_p_init + scaled_j_p/5 + integ_term_p + sum_term_p
-
-                # Solve for x_n_surf
-                self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n
-
-                # # Account for SEI growth
-                # if self.b_model.SEI_growth:
-                #     self.SEI_model.solve(I=I, dt=dt)
-                #     self.b_cell.R_cell += self.SEI_model.resistance
-
-            # Calc V
-            m_p = self.b_model.m(I= I, k=self.b_cell.elec_p.k , S=self.b_cell.elec_p.S, c_e= self.b_cell.electrolyte.conc,
-                                 c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
-            m_n = self.b_model.m(I= I, k=self.b_cell.elec_n.k , S=self.b_cell.elec_n.S, c_e= self.b_cell.electrolyte.conc,
-                                 c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
-            V = self.b_model.calc_term_V(p_OCP= self.b_cell.elec_p.OCP,
-                                         n_OCP= self.b_cell.elec_n.OCP,
-                                         m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
-                                         T=self.b_cell.T, I= I)
-
-            if V < self.b_cell.V_min:
-                threshold_potential_warning()
-                break
-
-            # Calc capacity
-            if iter_ == 0:
+        # set-up thermal object
+        t_model = Lumped(b_cell=self.b_cell)
+        # time increment
+        t_increment = 0.1
+        for cycle_no in range(cycler.num_cycles):
+            for step in cycler.cycle_steps:
                 cap = 0
-            else:
-                cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
+                t_prev =0
+                step_completed = False
+                while not step_completed:
+                    I = cycler.get_current(step)
+                    t_curr = t_prev + t_increment
+                    dt = t_increment
 
-            # Update results lists
-            x_p_list.append(self.b_cell.elec_p.SOC)
-            x_n_list.append(self.b_cell.elec_n.SOC)
-            V_list.append(V)
-            cap_list.append(cap)
+                    # break condition for rest time
+                    if ((step == "rest") and (t_curr > cycler.rest_time)):
+                        step_completed = True
 
-            # Calc temp and update T_list if not isothermal
-            if not self.b_model.isothermal:
-                if iter_ > 0:
-                    t_prev = self.t[iter_-1]
-                    dt = t_ - t_prev
-                    t_model = Lumped(b_cell=self.b_cell)
-                    # Solve battery cell surface temperature
-                    func_T = t_model.heat_balance(V=V, I=I)
-                    self.b_cell.T = ode_solvers.euler(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
-                # T_list.append(self.b_cell.T_K)
-            T_list.append(self.b_cell.T)
+                    # Calc total electrode surface flux
+                    scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
+                                               c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
+                    scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
+                                               c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
 
-        return Solution(t=self.t, I=self.I, V=V_list, x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
+                    # Account for SEI growth
+                    if self.b_model.SEI_growth:
+                        self.SEI_model.solve(I=I, dt=dt)
+                        self.b_cell.R_cell += self.SEI_model.resistance
+                        scaled_j_n -= self.SEI_model.j_s_prev
+
+                    # Calc summation term
+                    u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
+                                                                                   scaled_j_n)
+
+                    # calc integration term
+                    integ_term_p += 3*(self.b_cell.elec_p.D * scaled_j_p/(self.b_cell.elec_p.R**2))*dt
+                    integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
+
+                    # try/except in case of Invalid SOC
+                    try:
+                        # Solve for x_p_surf
+                        self.b_cell.elec_p.SOC = x_p_init + scaled_j_p/5 + integ_term_p + sum_term_p
+
+                        # Solve for x_n_surf
+                        self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n
+                    except InvalidSOCException as e:
+                        print(e)
+                        break
+
+                    # Calc V
+                    m_p = self.b_model.m(I= I, k=self.b_cell.elec_p.k , S=self.b_cell.elec_p.S, c_e= self.b_cell.electrolyte.conc,
+                                         c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
+                    m_n = self.b_model.m(I= I, k=self.b_cell.elec_n.k , S=self.b_cell.elec_n.S, c_e= self.b_cell.electrolyte.conc,
+                                         c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
+                    V = self.b_model.calc_term_V(p_OCP= self.b_cell.elec_p.OCP,
+                                                 n_OCP= self.b_cell.elec_n.OCP,
+                                                 m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
+                                                 T=self.b_cell.T, I= I)
+
+                    if V < self.b_cell.V_min:
+                        threshold_potential_warning()
+                        break
+
+                    # Calc capacity
+                    cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
+
+                    # break condition for charge and discharge
+                    if ((step == "charge") and (V > cycler.V_max)):
+                        step_completed = True
+                    if ((step == "discharge") and (V < cycler.V_min)):
+                        step_completed = True
+
+                    #update time
+                    t_prev = t_curr
+                    cycler.time_elapsed += t_increment
+
+                    # Update results lists
+                    t_list.append(cycler.time_elapsed)
+                    cycle_list.append(cycle_no)
+                    step_name_list.append(step)
+                    I_list.append(I)
+                    x_p_list.append(self.b_cell.elec_p.SOC)
+                    x_n_list.append(self.b_cell.elec_n.SOC)
+                    V_list.append(V)
+                    cap_list.append(cap)
+
+                    # Calc temp and update T_list if not isothermal
+                    if not self.b_model.isothermal:
+                            # t_prev = t_array[iter_-1]
+                            # dt = t_ - t_prev
+                            # Solve battery cell surface temperature
+                        func_T = t_model.heat_balance(V=V, I=I)
+                        self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
+                    T_list.append(self.b_cell.T)
+
+        return Solution(t=t_list, I=I_list, V=V_list, x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
                         name= sol_name)
+
+
+
+
+    # def solve(self, cycler, sol_name = None):
+    #     # if not isinstance(t_array, np.ndarray):
+    #     #     raise TypeError("input t_array needs to be a numpy array.")
+    #     # if not isinstance(I_array, np.ndarray):
+    #     #     raise TypeError("input I_array needs to be a numpy array.")
+    #     if not isinstance(cycler, BaseCycler):
+    #         raise TypeError("cycler needs to be a Cycler object.")
+    #     x_p_list, x_n_list, V_list, cap_list = [], [], [], []
+    #     T_list = []
+    #     integ_term_p = 0
+    #     integ_term_n = 0
+    #     u_k_p = np.zeros(self.N)
+    #     u_k_n = np.zeros(self.N)
+    #     x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC
+    #     # intial cap
+    #     cap = 0
+    #     # set-up thermal object
+    #     t_model = Lumped(b_cell=self.b_cell)
+    #     # time increment
+    #     t_increment = 0.1
+    #     for cycle_no in tqdm(range(cycler.num_cycles)):
+    #         for step in cycler.cycle_steps:
+    #             cap = 0
+    #             t_prev =0
+    #             step_completed = False
+    #             while not step_completed:
+    #                 I = cycler.get_current(step)
+    #                 if iter_ > 0:
+    #                     t_prev = t_array[iter_-1]
+    #                     dt = t_ - t_prev
+    #
+    #                     # Calc total electrode surface flux
+    #                     scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
+    #                                                c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
+    #                     scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
+    #                                                c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
+    #
+    #                     # # Account for SEI growth
+    #                     # if self.b_model.SEI_growth:
+    #                     #     self.SEI_model.solve(I=I, dt=dt)
+    #                     #     self.b_cell.R_cell += self.SEI_model.resistance
+    #                     #     scaled_j_n -= self.SEI_model.j_s_prev
+    #
+    #                     # Calc summation term
+    #                     u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
+    #                                                                                    scaled_j_n)
+    #
+    #                     # calc integration term
+    #                     integ_term_p += 3*(self.b_cell.elec_p.D * scaled_j_p/(self.b_cell.elec_p.R**2))*dt
+    #                     integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
+    #
+    #                     try:
+    #                         # Solve for x_p_surf
+    #                         self.b_cell.elec_p.SOC = x_p_init + scaled_j_p/5 + integ_term_p + sum_term_p
+    #
+    #                         # Solve for x_n_surf
+    #                         self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n
+    #                     except InvalidSOCException as e:
+    #                         print(e)
+    #                         break
+    #
+    #
+    #                     # # Account for SEI growth
+    #                     # if self.b_model.SEI_growth:
+    #                     #     self.SEI_model.solve(I=I, dt=dt)
+    #                     #     self.b_cell.R_cell += self.SEI_model.resistance
+    #
+    #                 # Calc V
+    #                 m_p = self.b_model.m(I= I, k=self.b_cell.elec_p.k , S=self.b_cell.elec_p.S, c_e= self.b_cell.electrolyte.conc,
+    #                                      c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
+    #                 m_n = self.b_model.m(I= I, k=self.b_cell.elec_n.k , S=self.b_cell.elec_n.S, c_e= self.b_cell.electrolyte.conc,
+    #                                      c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
+    #                 V = self.b_model.calc_term_V(p_OCP= self.b_cell.elec_p.OCP,
+    #                                              n_OCP= self.b_cell.elec_n.OCP,
+    #                                              m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
+    #                                              T=self.b_cell.T, I= I)
+    #
+    #                 if V < self.b_cell.V_min:
+    #                     threshold_potential_warning()
+    #                     break
+    #
+    #                 # Calc capacity
+    #                 if iter_ == 0:
+    #                     cap = 0
+    #                 else:
+    #                     cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
+    #
+    #                 # Update results lists
+    #                 x_p_list.append(self.b_cell.elec_p.SOC)
+    #                 x_n_list.append(self.b_cell.elec_n.SOC)
+    #                 V_list.append(V)
+    #                 cap_list.append(cap)
+    #
+    #                 # Calc temp and update T_list if not isothermal
+    #                 if not self.b_model.isothermal:
+    #                     if iter_ > 0:
+    #                         t_prev = t_array[iter_-1]
+    #                         dt = t_ - t_prev
+    #                         # Solve battery cell surface temperature
+    #                         func_T = t_model.heat_balance(V=V, I=I)
+    #                         self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
+    #                 T_list.append(self.b_cell.T)
+    #
+    #     return Solution(t=t_array, I=I_array, V=V_list, x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
+    #                     name= sol_name)

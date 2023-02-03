@@ -1,0 +1,48 @@
+import numpy as np
+
+from file_path_variables import *
+from data.test import funcs
+from src.battery_components.battery_cell import BatteryCell
+from src.models.single_particle_model import SPModel
+from src.solvers.eigen_func_exp import EigenFuncExp
+from src.visualization.plots import Plots
+
+
+# Operating parameters
+t = np.arange(0, 4500, 0.1)
+I = -1.656 * np.ones(len(t))
+T = 298.15
+
+# Modelling parameters
+SOC_init_p, SOC_init_n = 0.4956, 0.7568 # conditions in the literature source. Guo et al
+
+# Setup battery components and model
+cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,
+                   func_dOCPdT_p=funcs.dOCPdT_p, filepath_n = TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
+                    func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
+                    filepath_electrolyte = TEST_ELECTROLYTE_DIR, filepath_cell = TEST_BATTERY_CELL_DIR, T=T)
+print(cell.R_cell)
+model = SPModel(isothermal=True, degradation=False)
+cell1 = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,
+                   func_dOCPdT_p=funcs.dOCPdT_p, filepath_n = TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
+                    func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
+                    filepath_electrolyte = TEST_ELECTROLYTE_DIR, filepath_cell = TEST_BATTERY_CELL_DIR, T=T)
+cell1.R_cell = 2e-1
+model1 = SPModel(isothermal=True, degradation=False)
+cell2 = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,
+                   func_dOCPdT_p=funcs.dOCPdT_p, filepath_n = TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
+                    func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
+                    filepath_electrolyte = TEST_ELECTROLYTE_DIR, filepath_cell = TEST_BATTERY_CELL_DIR, T=T)
+cell2.R_cell = 2e-6
+model2 = SPModel(isothermal=True, degradation=False)
+
+# set-up solver and solve
+solver = EigenFuncExp(b_cell= cell, b_model= model, N=5, t= t, I= I)
+sol = solver.solve("Rcell = 2e-3 ohm m2")
+solver1 = EigenFuncExp(b_cell= cell1, b_model= model1, N=5, t= t, I= I)
+sol1 = solver1.solve("Rcell = 2e-1 ohm m2")
+solver2 = EigenFuncExp(b_cell= cell2, b_model= model2, N=5, t= t, I= I)
+sol2 = solver2.solve("Rcell = 2e-6 ohm m2")
+
+# Plot
+Plots(sol, sol1, sol2).comprehensive_plot()

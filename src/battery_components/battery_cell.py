@@ -28,7 +28,7 @@ class BatteryCell:
                                            func_dOCPdT=func_dOCPdT_n)
         self.electrolyte = electrolyte.Electrolyte(file_path=filepath_electrolyte)
         # initialize internal cell resistance
-        self.R_cell = (self.elec_p.L/self.elec_p.kappa_eff + self.electrolyte.L/self.electrolyte.kappa_eff + self.elec_n.L/self.elec_n.kappa_eff) * self.elec_n.A
+        self.R_cell = (self.elec_p.L/self.elec_p.kappa_eff + self.electrolyte.L/self.electrolyte.kappa_eff + self.elec_n.L/self.elec_n.kappa_eff) / self.elec_n.A
 
     @property
     def T(self):

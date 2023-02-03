@@ -13,7 +13,7 @@ class Lumped:
         return I * T * (self.b_cell.elec_p.dOCPdT - self.b_cell.elec_n.dOCPdT)
 
     def irreversible_heat(self, I, V):
-        return I * (V - (self.b_cell.elec_p.OCP - self.b_cell.elec_p.OCP))
+        return I * (V - (self.b_cell.elec_p.OCP - self.b_cell.elec_n.OCP))
 
     def heat_flux(self, T):
         return self.b_cell.h * self.b_cell.A * (T - self.b_cell.T_amb)

@@ -1,6 +1,8 @@
 class InvalidSOCException(Exception):
     "Raised when SOC is smaller than 0 or greater than 1."
-    pass
+    def __init__(self):
+        self.msg = "SOC is beyound 0-1"
+        super().__init__(self.msg)
 
 
 class InsufficientInputOperatingConditions(Exception):

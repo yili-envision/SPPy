@@ -88,6 +88,9 @@ class Electrode:
     def OCP(self):
         return self.func_OCP(self.SOC) + self.dOCPdT * (self.T - self.T_ref)
 
+    def i_0(self, c_e):
+        return self.k * self.max_conc * (c_e ** 0.5) * ((1 - self.SOC)**0.5) * (self.SOC ** 0.5)
+
 
 class PElectrode(Electrode):
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT=None):
