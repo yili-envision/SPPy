@@ -1,11 +1,12 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from src.calc_helpers.constants import Constants
 
 
 class Solution:
-    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, R_cell, name=None):
+    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, R_cell, name=None, save_csv_dir=None):
         self.cycle_num = np.array(cycle_num)
         self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
@@ -18,6 +19,25 @@ class Solution:
         self.R_cell = np.array(R_cell)
         self.name = name
         self.total_cycles = len(np.unique(self.cycle_num))
+        if save_csv_dir is not None:
+            self.save_csv_func(save_csv_dir)
+
+    def save_csv_func(self, output_file_dir):
+        df = pd.DataFrame({
+            'Time [s]': self.t,
+            'Cycle No': self.cycle_num,
+            'Step Name': self.cycle_step,
+            'I [A]': self.I,
+            'SOC_p': self.x_surf_p,
+            'SOC_n': self.x_surf_n,
+            'V [V]': self.V,
+            'capacity [Ahr]': self.cap,
+            'R_cell [ohm]': self.R_cell
+        })
+        if self.name is not None:
+            df.to_csv(output_file_dir + self.name + '.csv')
+        else:
+            raise ValueError("Sol name not given.")
 
     def initiate_single_plot(self):
         fig = plt.figure()
@@ -64,7 +84,7 @@ class Solution:
                                                       (self.cycle_step[i] == 'discharge'))]
 
     def filter_R_cell(self, cycle_no):
-        return [R_cell_ for i, R_cell_ in enumerate(self.T) if self.cycle_num[i] == cycle_no][-1]
+        return [R_cell_ for i, R_cell_ in enumerate(self.R_cell) if self.cycle_num[i] == cycle_no][-1]
 
     def calc_discharge_cap(self):
         all_cycle_no = np.unique(self.cycle_num)
@@ -150,9 +170,9 @@ class Solution:
         ax7.set_title('Cycling Performance')
 
         ax8 = fig.add_subplot(num_rows, num_cols, 8)
-        ax8.scatter(np.unique(self.cycle_num), self.calc_discharge_R_cell())
+        ax8.scatter(np.unique(self.cycle_num), self.calc_discharge_R_cell()*1e-3)
         ax8.set_xlabel('Cycle No.')
-        ax8.set_ylabel(r'Internal resistance [$\Omega$]')
+        ax8.set_ylabel(r'Internal resistance [m$\Omega$]')
         ax8.set_title('Cycling Performance')
 
         plt.tight_layout()
