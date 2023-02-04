@@ -5,7 +5,7 @@ from src.calc_helpers.constants import Constants
 
 
 class Solution:
-    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, name=None):
+    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, R_cell, name=None):
         self.cycle_num = np.array(cycle_num)
         self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
@@ -15,6 +15,7 @@ class Solution:
         self.x_surf_n = np.array(x_surf_n)
         self.cap = np.array(cap)
         self.T = np.array(T)
+        self.R_cell = np.array(R_cell)
         self.name = name
         self.total_cycles = len(np.unique(self.cycle_num))
 
@@ -62,9 +63,20 @@ class Solution:
         return [T_ for i, T_ in enumerate(self.T) if ((self.cycle_num[i] == cycle_no) and
                                                       (self.cycle_step[i] == 'discharge'))]
 
+    def filter_R_cell(self, cycle_no):
+        return [R_cell_ for i, R_cell_ in enumerate(self.T) if self.cycle_num[i] == cycle_no][-1]
+
     def calc_discharge_cap(self):
         all_cycle_no = np.unique(self.cycle_num)
         return np.array([self.filter_cap(all_cycle_no[i])[-1] for i in range(self.total_cycles)])
+
+    def calc_discharge_R_cell(self):
+        """
+        calulates the internal battery cell resistance after each cycle.
+        :return:
+        """
+        all_cycle_no = np.unique(self.cycle_num)
+        return np.array([self.filter_R_cell(all_cycle_no[i]) for i in range(self.total_cycles)])
 
     def comprehensive_plot(self):
         num_rows = 4
@@ -136,6 +148,12 @@ class Solution:
         ax7.set_xlabel('Cycle No.')
         ax7.set_ylabel('Discharge Capacity [A hr]')
         ax7.set_title('Cycling Performance')
+
+        ax8 = fig.add_subplot(num_rows, num_cols, 8)
+        ax8.scatter(np.unique(self.cycle_num), self.calc_discharge_R_cell())
+        ax8.set_xlabel('Cycle No.')
+        ax8.set_ylabel(r'Internal resistance [$\Omega$]')
+        ax8.set_title('Cycling Performance')
 
         plt.tight_layout()
         plt.show()

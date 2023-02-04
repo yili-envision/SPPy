@@ -87,6 +87,8 @@ class EigenFuncExp(BaseSolver):
         t_list = []
         I_list = []
         T_list = []
+        R_cell_list = []
+        # initialize calculation parameters
         integ_term_p = 0
         integ_term_n = 0
         u_k_p = np.zeros(self.N)
@@ -123,6 +125,7 @@ class EigenFuncExp(BaseSolver):
                         self.SEI_model.solve(I=I, dt=dt)
                         self.b_cell.R_cell += self.SEI_model.resistance
                         scaled_j_n -= self.SEI_model.j_s_prev
+                    R_cell_list.append(self.b_cell.R_cell)
 
                     # Calc summation term
                     u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
@@ -190,7 +193,7 @@ class EigenFuncExp(BaseSolver):
                     T_list.append(self.b_cell.T)
 
         return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
-                        x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
+                        x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list, R_cell=R_cell_list,
                         name= sol_name)
 
 

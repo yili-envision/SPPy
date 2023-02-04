@@ -11,11 +11,11 @@ from src.models.degradation import ROM_SEI
 I = 1.656
 T = 298.15
 V_min = 3
-V_max = 4
-num_cycles = 10
+V_max = 4.2
+num_cycles = 5
 charge_current = 1.656
 discharge_current = 1.656
-rest_time = 30
+rest_time = 30 * 60
 
 # Modelling parameters
 SOC_init_p, SOC_init_n = 0.4956, 0.7568 # conditions in the literature source. Guo et al
