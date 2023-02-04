@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import bisect
+from tqdm import tqdm
 
 from src.solvers.base import BaseSolver, timer
 from src.calc_helpers.constants import Constants
@@ -97,7 +98,7 @@ class EigenFuncExp(BaseSolver):
         t_model = Lumped(b_cell=self.b_cell)
         # time increment
         t_increment = 0.1
-        for cycle_no in range(cycler.num_cycles):
+        for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
                 t_prev =0
@@ -188,7 +189,8 @@ class EigenFuncExp(BaseSolver):
                         self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
                     T_list.append(self.b_cell.T)
 
-        return Solution(t=t_list, I=I_list, V=V_list, x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
+        return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
+                        x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list,
                         name= sol_name)
 
 

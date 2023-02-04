@@ -5,7 +5,9 @@ from src.calc_helpers.constants import Constants
 
 
 class Solution:
-    def __init__(self, t, I, V, x_surf_p, x_surf_n, cap, T, name=None):
+    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, name=None):
+        self.cycle_num = np.array(cycle_num)
+        self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
         self.I = np.array(I[:len(V)])
         self.V = np.array(V)
@@ -14,6 +16,7 @@ class Solution:
         self.cap = np.array(cap)
         self.T = np.array(T)
         self.name = name
+        self.total_cycles = len(np.unique(self.cycle_num))
 
     def initiate_single_plot(self):
         fig = plt.figure()
@@ -32,10 +35,41 @@ class Solution:
     def plot_capV(self):
         self.single_plot(self.cap, self.V, x_label= 'capacity [Ahr]', y_label='V [V]')
 
+    def filter_cap(self, cycle_no):
+        """
+        returns the discharge capacity of specified cycle no
+        :param cycle_no: (int) cycle no.
+        :return: returns the discharge capacity of specified cycle no
+        """
+        return [cap_ for i, cap_ in enumerate(self.cap) if ((self.cycle_num[i] == cycle_no) and
+                                                                         (self.cycle_step[i] == 'discharge'))]
+
+    def filter_V(self, cycle_no):
+        """
+        returns the potential during the discharge phase of the cycling
+        :param cycle_no: (int) cycle no.
+        :return: returns the discharge capacity of specified cycle no
+        """
+        return [V_ for i, V_ in enumerate(self.V) if ((self.cycle_num[i] == cycle_no) and
+                                                                 (self.cycle_step[i] == 'discharge'))]
+
+    def filter_T(self, cycle_no):
+        """
+        returns the temperature during the discharge phase of the cycling.
+        :param cycle_no: (int) cycle no.
+        :return: returns the temperature of the specified cycle no
+        """
+        return [T_ for i, T_ in enumerate(self.T) if ((self.cycle_num[i] == cycle_no) and
+                                                      (self.cycle_step[i] == 'discharge'))]
+
+    def calc_discharge_cap(self):
+        all_cycle_no = np.unique(self.cycle_num)
+        return np.array([self.filter_cap(all_cycle_no[i])[-1] for i in range(self.total_cycles)])
+
     def comprehensive_plot(self):
-        num_rows = 3
+        num_rows = 4
         num_cols = 2
-        fig = plt.figure(figsize=(6.4, 7.2))
+        fig = plt.figure(figsize=(6.4, 10.8))
 
         ax1 = fig.add_subplot(num_rows, num_cols, 1)
         ax1.plot(self.t, self.V)
@@ -44,10 +78,22 @@ class Solution:
         ax1.set_title('V vs. Time')
 
         ax2 = fig.add_subplot(num_rows, num_cols, 2)
-        ax2.plot(self.cap, self.V)
+        if len(np.unique(self.cycle_num)) == 1:
+            ax2.plot(self.cap, self.V)
+        else:
+            # omit cycle 0
+            first_cycle_no = np.unique(self.cycle_num)[1]
+            last_cycle_no = np.unique(self.cycle_num)[-1]
+            cap_list_first = self.filter_cap(first_cycle_no)
+            cap_list_last = self.filter_cap(last_cycle_no)
+            V_list_first = self.filter_V(first_cycle_no)
+            V_list_last = self.filter_V(last_cycle_no)
+            ax2.plot(cap_list_first, V_list_first, label = f"cycle {first_cycle_no}")
+            ax2.plot(cap_list_last, V_list_last, label = f"cycle {last_cycle_no}")
         ax2.set_xlabel('Capacity [Ahr]')
         ax2.set_ylabel('V [V]')
         ax2.set_title('V vs. Capacity')
+        ax2.legend()
 
         ax3 = fig.add_subplot(num_rows, num_cols, 3)
         ax3.plot(self.t, self.x_surf_p)
@@ -68,10 +114,28 @@ class Solution:
         ax5.set_title('Battery Cell Surface Temp.')
 
         ax6 = fig.add_subplot(num_rows, num_cols, 6)
-        ax6.plot(self.cap, self.T - Constants.T_abs)
+        if len(np.unique(self.cycle_num)) == 1:
+            ax6.plot(self.cap, self.T - Constants.T_abs)
+        else:
+            # omit cycle 0
+            first_cycle_no = np.unique(self.cycle_num)[1]
+            last_cycle_no = np.unique(self.cycle_num)[-1]
+            cap_list_first = self.filter_cap(first_cycle_no)
+            cap_list_last = self.filter_cap(last_cycle_no)
+            T_list_first = self.filter_T(first_cycle_no)
+            T_list_last = self.filter_T(last_cycle_no)
+            ax6.plot(cap_list_first, np.array(T_list_first) - Constants.T_abs, label=f"cycle {first_cycle_no}")
+            ax6.plot(cap_list_last, np.array(T_list_last) - Constants.T_abs, label=f"cycle {last_cycle_no}")
         ax6.set_xlabel('Capacity [Ahr]')
         ax6.set_ylabel('Temperature [C]')
         ax6.set_title('Battery Cell Surface Temp.')
+        ax6.legend()
+
+        ax7 = fig.add_subplot(num_rows, num_cols, 7)
+        ax7.scatter(np.unique(self.cycle_num), self.calc_discharge_cap())
+        ax7.set_xlabel('Cycle No.')
+        ax7.set_ylabel('Discharge Capacity [A hr]')
+        ax7.set_title('Cycling Performance')
 
         plt.tight_layout()
         plt.show()
