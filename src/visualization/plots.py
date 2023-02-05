@@ -30,7 +30,6 @@ class Plots:
         mpl.rcParams['lines.linewidth'] = 3
         plt.rc('axes', titlesize= 15)
         plt.rc('axes', labelsize= 15)
-        # mpl.rcParams.update({'font.size': 22})
 
         fig = plt.figure(figsize=(12, 10), dpi=300)
         num_col = 2
@@ -59,18 +58,17 @@ class Plots:
         ax5 = fig.add_subplot(num_row, num_col, 5)
         ax5.set_xlabel('Time [s]')
         ax5.set_ylabel(r'T [$^O$C]')
-        ax5.set_title('Negative Electrode SOC')
+        ax5.set_title('Battery Surface Temp')
 
         for sol in self.sols:
             self.plot_in_axis(ax1, sol, sol.t, sol.V)
             self.plot_in_axis(ax2, sol, sol.cap, sol.V)
             self.plot_in_axis(ax3, sol, sol.t, sol.x_surf_p)
             self.plot_in_axis(ax4, sol, sol.t, sol.x_surf_n)
-            self.plot_in_axis(ax5, sol, sol.t, sol.T + Constants.T_abs)
+            self.plot_in_axis(ax5, sol, sol.t, sol.T - Constants.T_abs)
 
         lines_labels = [ax1.get_legend_handles_labels()]
         lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
         fig.legend(lines, labels)
-        # plt.legend()
         plt.tight_layout()
         plt.show()

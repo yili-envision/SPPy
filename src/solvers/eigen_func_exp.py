@@ -77,7 +77,7 @@ class EigenFuncExp(BaseSolver):
         return u_k_p, u_k_n, sum_term_p, sum_term_n
 
     @timer
-    def solve(self, cycler, sol_name = None, save_csv_dir=None):
+    def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1):
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
         # initialize result storage lists
@@ -99,7 +99,7 @@ class EigenFuncExp(BaseSolver):
         # set-up thermal object
         t_model = Lumped(b_cell=self.b_cell)
         # time increment
-        t_increment = 0.1
+        # t_increment = 0.1
         for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
@@ -155,6 +155,9 @@ class EigenFuncExp(BaseSolver):
                                                  n_OCP= self.b_cell.elec_n.OCP,
                                                  m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
                                                  T=self.b_cell.T, I= I)
+
+                    if verbose:
+                        print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no, ", terminal voltage [V]: ", V)
 
                     if V < self.b_cell.V_min:
                         threshold_potential_warning()

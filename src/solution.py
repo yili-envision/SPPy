@@ -98,6 +98,19 @@ class Solution:
         all_cycle_no = np.unique(self.cycle_num)
         return np.array([self.filter_R_cell(all_cycle_no[i]) for i in range(self.total_cycles)])
 
+    def plot_tV(self):
+        num_rows = 1
+        num_cols = 1
+        fig = plt.figure()
+
+        ax1 = fig.add_subplot(num_rows, num_cols, 1)
+        ax1.plot(self.t, self.V)
+        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('V [V]')
+        ax1.set_title('V vs. Time')
+
+        plt.show()
+
     def comprehensive_plot(self):
         num_rows = 4
         num_cols = 2
