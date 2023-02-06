@@ -65,6 +65,15 @@ class Solution:
         return [cap_ for i, cap_ in enumerate(self.cap) if ((self.cycle_num[i] == cycle_no) and
                                                                          (self.cycle_step[i] == 'discharge'))]
 
+    def filter_charge_cap(self, cycle_no):
+        """
+        returns the charge capacity of specified cycle no
+        :param cycle_no: (int) cycle no.
+        :return: returns the discharge capacity of specified cycle no
+        """
+        return [cap_ for i, cap_ in enumerate(self.cap) if ((self.cycle_num[i] == cycle_no) and
+                                                                         (self.cycle_step[i] == 'charge'))]
+
     def filter_V(self, cycle_no):
         """
         returns the potential during the discharge phase of the cycling

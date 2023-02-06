@@ -9,19 +9,19 @@ from src.battery_components.battery_cell import BatteryCell
 from src.models.single_particle_model import SPModel
 from src.solvers.eigen_func_exp import EigenFuncExp
 from src.cycler.charge import Charge
+from src.cycler.cc import CC
 
 from funcs import correct_time
 
 
 # Calce data
-df_exp = pd.read_csv("C:/Users/Moin/PycharmProjects/CalceData/PL/PL21/FirstCharge.csv")
-df_exp = df_exp[df_exp['Voltage_Volt'] < 4.19]
-df_exp = df_exp[df_exp['Current_Amp'] > 0]
-t_init = df_exp['Time_sec'].iloc[0]
-df_exp['Time_sec'] = df_exp['Time_sec'].apply(lambda x: correct_time(x, t_init=t_init))
+df_exp = pd.read_csv("C:/Users/Moin/PycharmProjects/CalceData/PL/PL21/SecondCharge.csv")
+# df_exp = df_exp[df_exp['Current_Amp'] != 0]
+# t_init = df_exp['Time_sec'].iloc[0]
+# df_exp['Time_sec'] = df_exp['Time_sec'].apply(lambda x: correct_time(x, t_init=t_init))
 t_exp = df_exp['Time_sec'].to_numpy()
 V_exp = df_exp['Voltage_Volt'].to_numpy()
-I_exp = df_exp['Current_Amp'].to_numpy()
+I_exp = -df_exp['Current_Amp'].to_numpy()
 
 # Operating parameters
 T = 298.15
@@ -29,11 +29,11 @@ V_min = 2.8
 V_max = 4.2
 num_cycles = 1
 charge_current = 0.75
-discharge_current = 0
-rest_time = 30
+discharge_current = 0.75
+rest_time = 70
 
 # Modelling parameters
-SOC_init_p, SOC_init_n = 0.725, 0.06
+SOC_init_p, SOC_init_n = 0.888, 0.0096
 
 # Setup battery components
 cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=OCP_ref_p,
@@ -43,11 +43,13 @@ cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP
 cell.R_cell = 0.2
 cell.elec_n.max_conc = 28500
 # cell.elec_p.max_conc = 15000
-cell.elec_p.max_conc = 35000
+cell.elec_p.max_conc = 62000
 model = SPModel(isothermal=False, degradation=False)
 
 # set-up solver and solve
-cycler = Charge(charge_current=charge_current, V_max=V_max)
+# cycler = Charge(charge_current=charge_current, V_max=V_max)
+cycler = CC(num_cycles=1, charge_current=charge_current, discharge_current=discharge_current, rest_time=rest_time,
+            V_max=V_max, V_min=V_min)
 solver = EigenFuncExp(b_cell=cell, b_model=model, N=5)
 sol = solver.solve(cycler=cycler, verbose=True, t_increment=1)
 
@@ -57,3 +59,6 @@ plt.plot(sol.t, sol.V)
 plt.show()
 # sol.plot_tV()
 # sol.comprehensive_plot()
+#
+# plt.plot(t_exp, V_exp)
+# plt.show()

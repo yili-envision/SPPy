@@ -11,6 +11,17 @@ class Discharge(BaseCycler):
         self.V_min = V_min
         self.num_cycles = 1
 
+class DischargeRest(BaseCycler):
+    cycle_steps = ['discharge', 'rest']
+
+    def __init__(self, discharge_current, rest_time, V_min):
+        super().__init__()
+        self.discharge_current = -discharge_current
+        self.rest_time = rest_time
+        self.V_min = V_min
+        self.num_cycles = 1
+
+
 class CustomDischarge(BaseCycler):
     cycle_steps = ['discharge']
 

@@ -1,15 +1,16 @@
 import numpy as np
 
-from data.general_OCP.funcs import extract_OCP
+# from data.general_OCP.funcs import extract_OCP
+from data.general_OCP.LCO import OCP_ref_p
 
 # def OCP_ref_p(SOC):
 #     return 4.04596 + np.exp(-42.30027 * SOC + 16.56714) - 0.04880 * np.arctan(50.01833 * SOC - 26.48897) \
 #               - 0.05447 * np.arctan(18.99678 * SOC - 12.32362) - np.exp(78.24095 * SOC - 78.68074)
 
-def OCP_ref_p(SOC):
-    specie_name_p = 'LCO'
-    T = 298.15
-    return extract_OCP(x=SOC, specie_name=specie_name_p, T=T)
+# def OCP_ref_p(SOC):
+#     specie_name_p = 'LCO'
+#     T = 298.15
+#     return extract_OCP(x=SOC, specie_name=specie_name_p, T=T)
 
 
 def dOCPdT_p(SOC):
