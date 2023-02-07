@@ -40,7 +40,7 @@ def sim(SOC_init_p, SOC_init_n, R_cell, max_conc_n, R_n):
     # Setup battery components
     cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=OCP_ref_p,
                        func_dOCPdT_p=funcs.dOCPdT_p, filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                       func_OCP_n=OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
+                       func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
                        filepath_electrolyte=TEST_ELECTROLYTE_DIR, filepath_cell=TEST_BATTERY_CELL_DIR, T=T)
     cell.R_cell = R_cell
     cell.elec_n.max_conc = max_conc_n
@@ -92,9 +92,9 @@ def objective_func(row):
 # perform genetic algorithm
 df_GA_results,param, fitness = ga(objective_func, n_generation=5,
                                   n_chromosones= 100, n_genes=5,
-                                  bounds = [[0.35, 0.6],
-                                            [0.6, 0.8],
-                                            [0.15, 0.4],
+                                  bounds = [[0.9, 0.99],
+                                            [0.03, 0.05],
+                                            [0.05, 1],
                                             [25000, 60000],
                                             [1e-5, 2e-5]],
                                   n_pool = 3,

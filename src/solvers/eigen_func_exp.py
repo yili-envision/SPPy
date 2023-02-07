@@ -77,7 +77,8 @@ class EigenFuncExp(BaseSolver):
         return u_k_p, u_k_n, sum_term_p, sum_term_n
 
     @timer
-    def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1):
+    def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1,
+              termination_criteria = 'V'):
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
         # initialize result storage lists
@@ -166,11 +167,19 @@ class EigenFuncExp(BaseSolver):
                     # Calc capacity
                     cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
 
-                    # break condition for charge and discharge
-                    if ((step == "charge") and (V > cycler.V_max)):
-                        step_completed = True
-                    if ((step == "discharge") and (V < cycler.V_min)):
-                        step_completed = True
+                    # break condition for charge and discharge if stop criteria is V-based
+                    if termination_criteria == 'V':
+                        if ((step == "charge") and (V > cycler.V_max)):
+                            step_completed = True
+                        if ((step == "discharge") and (V < cycler.V_min)):
+                            step_completed = True
+
+                    # break condition for charge and discharge if stop criteria is SOC-based
+                    if termination_criteria == 'SOC':
+                        if ((step == "charge") and (cap > cycler.SOC_max)):
+                            step_completed = True
+                        if ((step == "discharge") and (V < cycler.SOC_min)):
+                            step_completed = True
 
                     #update time
                     t_prev = t_curr
