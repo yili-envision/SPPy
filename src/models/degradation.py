@@ -13,7 +13,7 @@ class ROM_SEI:
     Journal of Power Sources. Vol: 209. pgs: 282-288.
     2. Elvira et al. JPS. 2021
     """
-    def __init__(self, bCell, file_path, resistance_init):
+    def __init__(self, bCell, file_path, resistance_init, thickness_init = 0):
         if not isinstance(bCell, BatteryCell):
             raise TypeError("bCell variable needs to be a Battery Cell object.")
         self.b_cell = bCell
@@ -25,6 +25,9 @@ class ROM_SEI:
         self.rho = csv_file['Density [kg m^-3]'] # Average SEI Density
         self.resistance = resistance_init
         self.j_s_prev = None
+        self.thickness_init = thickness_init
+        self.thickness = thickness_init
+        self.limiting_coefficient = 1.6e6
 
     def j_tot(self, I):
         return SPModel.scaled_j(I=I, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D, c_max=self.b_cell.elec_n.max_conc,
@@ -37,8 +40,11 @@ class ROM_SEI:
     def eta_s(self, j_i_value):
         return self.eta_n(j_i_value) + self.U_ref - self.b_cell.elec_n.OCP
 
+    def decay_function(self):
+        return np.exp(-self.limiting_coefficient *  (self.thickness - self.thickness_init)/self.thickness_init)
+
     def j_s(self, j_i_value):
-        return -self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
+        return -self.decay_function() * self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
 
     def j_i(self, I, j_s):
         return self.j_tot(I) - j_s
@@ -64,9 +70,11 @@ class ROM_SEI:
         if I < 0:
             self.j_s_prev = self.solve_j_s(I)
             self.resistance += self.delta_resistance(js_prev=self.j_s_prev, dt=dt)
+            self.thickness += self.delta_thickness(js_prev=self.j_s_prev, dt=dt)
         else:
             self.j_s_prev = 0.0
             self.resistance += 0.0
+            self.thickness += 0.0
 
     def __repr__(self):
         return f"SEI with resistance {self.resistance}"

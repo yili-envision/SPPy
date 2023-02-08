@@ -191,11 +191,11 @@ class Solution:
         ax7.set_ylabel('Discharge Capacity [A hr]')
         ax7.set_title('Cycling Performance')
 
-        ax8 = fig.add_subplot(num_rows, num_cols, 8)
-        ax8.scatter(np.unique(self.cycle_num), self.calc_discharge_R_cell()*1e3)
-        ax8.set_xlabel('Cycle No.')
-        ax8.set_ylabel(r'Internal resistance [m$\Omega$]')
-        ax8.set_title('Cycling Performance')
+        # ax8 = fig.add_subplot(num_rows, num_cols, 8)
+        # ax8.scatter(np.unique(self.cycle_num), self.calc_discharge_R_cell()*1e3)
+        # ax8.set_xlabel('Cycle No.')
+        # ax8.set_ylabel(r'Internal resistance [m$\Omega$]')
+        # ax8.set_title('Cycling Performance')
 
         plt.tight_layout()
         plt.show()
