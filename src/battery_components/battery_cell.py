@@ -29,6 +29,7 @@ class BatteryCell:
         self.electrolyte = electrolyte.Electrolyte(file_path=filepath_electrolyte)
         # initialize internal cell resistance
         self.R_cell = (self.elec_p.L/self.elec_p.kappa_eff + self.electrolyte.L/self.electrolyte.kappa_eff + self.elec_n.L/self.elec_n.kappa_eff) / self.elec_n.A
+        self.R_cell_init = self.R_cell
 
     @property
     def T(self):

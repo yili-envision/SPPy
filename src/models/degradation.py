@@ -27,11 +27,11 @@ class ROM_SEI:
         self.j_s_prev = None
         self.thickness_init = thickness_init
         self.thickness = thickness_init
-        self.limiting_coefficient = 1.6e6
+        self.limiting_coefficient = 1.6e7
 
     def j_tot(self, I):
         return SPModel.scaled_j(I=I, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D, c_max=self.b_cell.elec_n.max_conc,
-                                R=self.b_cell.elec_n.R, electrode_type='n')
+                                R=self.b_cell.elec_n.R, electrode_type='n') * Constants.F
 
     def eta_n(self, j_i_value):
         return (2 * Constants.R * self.b_cell.T / Constants.F) * (np.arcsinh(j_i_value /
@@ -41,10 +41,11 @@ class ROM_SEI:
         return self.eta_n(j_i_value) + self.U_ref - self.b_cell.elec_n.OCP
 
     def decay_function(self):
-        return np.exp(-self.limiting_coefficient *  (self.thickness - self.thickness_init)/self.thickness_init)
+        return np.exp(-self.limiting_coefficient * self.thickness)
 
     def j_s(self, j_i_value):
-        return -self.decay_function() * self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
+        decay = 1
+        return -decay * self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
 
     def j_i(self, I, j_s):
         return self.j_tot(I) - j_s

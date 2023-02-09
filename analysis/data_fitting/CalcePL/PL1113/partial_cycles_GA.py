@@ -12,7 +12,7 @@ from src.solvers.eigen_func_exp import EigenFuncExp
 from src.cycler.cc import CCNoFirstRest
 from src.calc_helpers.genetic_algorithm import ga
 
-from analysis.data_fitting.CalcePL.funcs import correct_time
+from analysis.data_fitting.CalcePL.PL21.funcs import correct_time
 
 # Calce data
 df_exp = pd.read_csv(CSV_EXP_FILE)

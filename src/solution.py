@@ -6,7 +6,8 @@ from src.calc_helpers.constants import Constants
 
 
 class Solution:
-    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, T, R_cell, name=None, save_csv_dir=None):
+    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge,
+                 T, R_cell, name=None, save_csv_dir=None):
         self.cycle_num = np.array(cycle_num)
         self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
@@ -15,6 +16,8 @@ class Solution:
         self.x_surf_p = np.array(x_surf_p)
         self.x_surf_n = np.array(x_surf_n)
         self.cap = np.array(cap)
+        self.cap_charge = cap_charge
+        self.cap_discharge = cap_discharge
         self.T = np.array(T)
         self.R_cell = np.array(R_cell)
         self.name = name
@@ -22,7 +25,7 @@ class Solution:
         if save_csv_dir is not None:
             self.save_csv_func(save_csv_dir)
 
-    def save_csv_func(self, output_file_dir):
+    def create_df(self):
         df = pd.DataFrame({
             'Time [s]': self.t,
             'Cycle No': self.cycle_num,
@@ -32,8 +35,14 @@ class Solution:
             'SOC_n': self.x_surf_n,
             'V [V]': self.V,
             'capacity [Ahr]': self.cap,
+            'Charge cap. [Ahr]': self.cap_charge,
+            'Discharge cap. [Ahr]': self.cap_discharge,
             'R_cell [ohm]': self.R_cell
         })
+        return df
+
+    def save_csv_func(self, output_file_dir):
+        df = self.create_df()
         if self.name is not None:
             df.to_csv(output_file_dir + self.name + '.csv')
         else:
@@ -62,8 +71,8 @@ class Solution:
         :param cycle_no: (int) cycle no.
         :return: returns the discharge capacity of specified cycle no
         """
-        return [cap_ for i, cap_ in enumerate(self.cap) if ((self.cycle_num[i] == cycle_no) and
-                                                                         (self.cycle_step[i] == 'discharge'))]
+        df = self.create_df()
+        return df[(df['Cycle No'] == cycle_no) & (df['Step Name'] == 'discharge')]['Discharge cap. [Ahr]'].to_numpy()
 
     def filter_charge_cap(self, cycle_no):
         """
@@ -95,9 +104,8 @@ class Solution:
     def filter_R_cell(self, cycle_no):
         return [R_cell_ for i, R_cell_ in enumerate(self.R_cell) if self.cycle_num[i] == cycle_no][-1]
 
-    def calc_discharge_cap(self):
-        all_cycle_no = np.unique(self.cycle_num)
-        return np.array([self.filter_cap(all_cycle_no[i])[-1] for i in range(self.total_cycles)])
+    def calc_discharge_cap(self, cycle_no):
+        return self.filter_cap(cycle_no=cycle_no)[-1]
 
     def calc_discharge_R_cell(self):
         """
@@ -119,6 +127,9 @@ class Solution:
         ax1.set_title('V vs. Time')
 
         plt.show()
+
+    def dis_cap_array(self):
+        return np.array([self.calc_discharge_cap(cycle_no_) for cycle_no_ in np.unique(self.cycle_num)])
 
     def comprehensive_plot(self):
         num_rows = 4
@@ -186,7 +197,7 @@ class Solution:
         ax6.legend()
 
         ax7 = fig.add_subplot(num_rows, num_cols, 7)
-        ax7.scatter(np.unique(self.cycle_num), self.calc_discharge_cap())
+        ax7.scatter(np.unique(self.cycle_num), self.dis_cap_array())
         ax7.set_xlabel('Cycle No.')
         ax7.set_ylabel('Discharge Capacity [A hr]')
         ax7.set_title('Cycling Performance')

@@ -9,7 +9,7 @@ from src.models.single_particle_model import SPModel
 from src.solvers.eigen_func_exp import EigenFuncExp
 from src.cycler.cc import CCNoFirstRest
 
-from analysis.data_fitting.CalcePL.funcs import correct_time
+from analysis.data_fitting.CalcePL.PL21.funcs import correct_time
 
 # Calce data
 df_exp = pd.read_csv('C:/Users/Moin/PycharmProjects/CalceData/PL/PL11/First100Cycles.csv')

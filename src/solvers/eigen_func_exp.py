@@ -81,8 +81,10 @@ class EigenFuncExp(BaseSolver):
               termination_criteria = 'V'):
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
+        # if (termination_criteria != 'V') or (termination_criteria != 'SOC'):
+        #     raise ValueError("termination criteria needs to be either 'V' or 'SOC'")
         # initialize result storage lists
-        x_p_list, x_n_list, V_list, cap_list = [], [], [], []
+        x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
         cycle_list = []
         step_name_list = []
         t_list = []
@@ -95,15 +97,15 @@ class EigenFuncExp(BaseSolver):
         u_k_p = np.zeros(self.N)
         u_k_n = np.zeros(self.N)
         x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC
-        # intial cap
-        cap = 0
+        # # intial cap
+        # cap = 0
         # set-up thermal object
         t_model = Lumped(b_cell=self.b_cell)
-        # time increment
-        # t_increment = 0.1
         for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
+                cap_charge = 0
+                cap_discharge = 0
                 t_prev =0
                 step_completed = False
                 while not step_completed:
@@ -124,9 +126,10 @@ class EigenFuncExp(BaseSolver):
                     # Account for SEI growth
                     if self.b_model.SEI_growth:
                         self.SEI_model.solve(I=I, dt=dt)
-                        self.b_cell.R_cell += self.SEI_model.resistance
-                        scaled_j_n -= self.SEI_model.j_s_prev
-                    R_cell_list.append(self.b_cell.R_cell)
+                        # self.b_cell.R_cell += self.SEI_model.resistance
+                        self.b_cell.R_cell += self.SEI_model.delta_resistance(js_prev=self.SEI_model.j_s_prev, dt=dt)
+                        scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
+                    # R_cell_list.append(self.b_cell.R_cell)
 
                     # Calc summation term
                     u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
@@ -157,15 +160,19 @@ class EigenFuncExp(BaseSolver):
                                                  m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
                                                  T=self.b_cell.T, I= I)
 
-                    if verbose:
-                        print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no, ", terminal voltage [V]: ", V)
-
                     if V < self.b_cell.V_min:
                         threshold_potential_warning()
                         break
 
-                    # Calc capacity
-                    cap = self.b_model.calc_cap(cap_prev=cap, I=I, dt=dt)
+                    # Calc charge, discharge, LIB capacity
+                    cap = self.b_model.calc_cap(cap_prev=cap, Q=self.b_cell.cap ,I=I, dt=dt)
+                    delta_cap = self.b_model.delta_cap(Q=self.b_cell.cap,I=I, dt=dt)
+                    if step == "charge":
+                        cap_charge = self.b_model.calc_cap(cap_prev=cap_charge, Q=self.b_cell.cap, I=I, dt=dt)
+                        cycler.SOC_LIB += delta_cap
+                    elif step == "discharge":
+                        cap_discharge = self.b_model.calc_cap(cap_prev=cap_discharge, Q=self.b_cell.cap, I=I, dt=dt)
+                        cycler.SOC_LIB -= delta_cap
 
                     # break condition for charge and discharge if stop criteria is V-based
                     if termination_criteria == 'V':
@@ -173,12 +180,11 @@ class EigenFuncExp(BaseSolver):
                             step_completed = True
                         if ((step == "discharge") and (V < cycler.V_min)):
                             step_completed = True
-
                     # break condition for charge and discharge if stop criteria is SOC-based
-                    if termination_criteria == 'SOC':
-                        if ((step == "charge") and (cap > cycler.SOC_max)):
+                    elif termination_criteria == 'SOC':
+                        if ((step == "charge") and (cycler.SOC_LIB > cycler.SOC_max)):
                             step_completed = True
-                        if ((step == "discharge") and (V < cycler.SOC_min)):
+                        if ((step == "discharge") and (cycler.SOC_LIB < cycler.SOC_min)):
                             step_completed = True
 
                     #update time
@@ -194,6 +200,9 @@ class EigenFuncExp(BaseSolver):
                     x_n_list.append(self.b_cell.elec_n.SOC)
                     V_list.append(V)
                     cap_list.append(cap)
+                    cap_charge_list.append(cap_charge)
+                    cap_discharge_list.append(cap_discharge)
+                    R_cell_list.append(self.b_cell.R_cell)
 
                     # Calc temp and update T_list if not isothermal
                     if not self.b_model.isothermal:
@@ -201,6 +210,12 @@ class EigenFuncExp(BaseSolver):
                         self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
                     T_list.append(self.b_cell.T)
 
+                    if verbose:
+                        print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no,
+                              'step: ', step, "current [A]", I,", terminal voltage [V]: ", V, ", SOC_LIB: ", cycler.SOC_LIB,
+                              "cap: ", cap)
+
         return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
-                        x_surf_p=x_p_list, x_surf_n=x_n_list, cap=cap_list, T=T_list, R_cell=R_cell_list,
-                        name= sol_name, save_csv_dir=save_csv_dir)
+                        x_surf_p=x_p_list, x_surf_n=x_n_list,
+                        cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
+                        T=T_list, R_cell=R_cell_list, name= sol_name, save_csv_dir=save_csv_dir)

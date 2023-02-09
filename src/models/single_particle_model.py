@@ -43,5 +43,9 @@ class SPModel:
         return V
 
     @staticmethod
-    def calc_cap(cap_prev, I, dt):
-        return cap_prev + (1/3600) * np.abs(I) * dt
+    def delta_cap(Q, I, dt):
+        return (1/3600) * (np.abs(I) * dt / Q)
+
+    @staticmethod
+    def calc_cap(cap_prev, Q, I, dt):
+        return cap_prev + SPModel.delta_cap(Q=Q, I=I, dt=dt)

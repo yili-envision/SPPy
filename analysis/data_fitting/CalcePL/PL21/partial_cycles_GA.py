@@ -47,7 +47,7 @@ def sim(SOC_init_p, SOC_init_n, R_cell, max_conc_p, max_conc_n):
 
     # set-up solver and solve
     cycler = CCNoFirstRest(num_cycles=num_cycles, charge_current=charge_current, discharge_current=discharge_current,
-                           rest_time=rest_time, V_max=V_max, V_min=V_min, SOC_min=0.2, SOC_max=0.8)
+                           rest_time=rest_time, V_max=V_max, V_min=V_min, SOC_min=0.2, SOC_max=0.8, SOC_LIB=0.2)
     solver = EigenFuncExp(b_cell=cell, b_model=model, N=5)
     sol = solver.solve(cycler=cycler, t_increment=1, termination_criteria = 'SOC')
     return sol.t, sol.V
@@ -94,8 +94,8 @@ df_GA_results,param, fitness = ga(objective_func, n_generation=5,
                                   bounds = [[0.75, 0.99],
                                             [0.02, 0.25],
                                             [0.05, 0.1],
-                                            [30000, 70000],
-                                            [25000, 50000]],
+                                            [40000, 70000],
+                                            [25000, 40000]],
                                   n_pool = 5,
                                   n_elite=1,
                                   c_f = 0.8)

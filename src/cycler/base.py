@@ -1,6 +1,7 @@
 class BaseCycler:
     def __init__(self):
         self.time_elapsed = 0.0
+        self.SOC_LIB = 0.0
 
     def get_current(self, step_name):
         """
