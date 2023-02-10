@@ -78,7 +78,7 @@ class EigenFuncExp(BaseSolver):
 
     @timer
     def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1,
-              termination_criteria = 'V'):
+              termination_criteria = 'V', adaptive_step=False):
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
         # if (termination_criteria != 'V') or (termination_criteria != 'SOC'):

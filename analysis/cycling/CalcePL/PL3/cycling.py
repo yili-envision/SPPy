@@ -16,7 +16,7 @@ from src.cycler.cc import CC,CCNoFirstRest
 T = 298.15
 V_min_partial = 2
 V_max_partial = 4.5
-num_cycles_partial = 800
+num_cycles_partial = 8
 charge_current = 0.75
 discharge_current = 0.75
 rest_time = 1795
@@ -46,11 +46,12 @@ battery_cap_init = cell.cap
 # solve
 sol_partial = solver.solve(cycler=cycler_partial, verbose=False, t_increment=t_increment, termination_criteria = 'SOC')
 
-# save cycling data
-pd.DataFrame({'Cycle_no': sol_partial.filter_cycle_nums(),
-              'NDC' :sol_partial.calc_battery_cap_array()/battery_cap_init}).to_csv("cycling_sim_data.csv", index=False)
+# # save cycling data
+# pd.DataFrame({'Cycle_no': sol_partial.filter_cycle_nums(),
+#               'NDC' :sol_partial.calc_battery_cap_array()/battery_cap_init}).to_csv("cycling_sim_data.csv", index=False)
 
 # prints and plots
+sol_partial.comprehensive_plot()
 print('cycle:', sol_partial.cycle_num[-1], 'SEI_thickness: ', SEI_model.thickness)
 mpl.rcParams['lines.linewidth'] = 3
 plt.rc('axes', titlesize=15)
