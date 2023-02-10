@@ -7,7 +7,7 @@ from src.calc_helpers.constants import Constants
 
 class Solution:
     def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge,
-                 T, R_cell, name=None, save_csv_dir=None):
+                 battery_cap, T, R_cell, name=None, save_csv_dir=None):
         self.cycle_num = np.array(cycle_num)
         self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
@@ -18,6 +18,7 @@ class Solution:
         self.cap = np.array(cap)
         self.cap_charge = cap_charge
         self.cap_discharge = cap_discharge
+        self.battery_cap = battery_cap
         self.T = np.array(T)
         self.R_cell = np.array(R_cell)
         self.name = name
@@ -37,7 +38,8 @@ class Solution:
             'capacity [Ahr]': self.cap,
             'Charge cap. [Ahr]': self.cap_charge,
             'Discharge cap. [Ahr]': self.cap_discharge,
-            'R_cell [ohm]': self.R_cell
+            'R_cell [ohm]': self.R_cell,
+            'Battery cap [Ahr]': self.battery_cap
         })
         return df
 
@@ -65,6 +67,9 @@ class Solution:
     def plot_capV(self):
         self.single_plot(self.cap, self.V, x_label= 'capacity [Ahr]', y_label='V [V]')
 
+    def filter_cycle_nums(self):
+        return np.unique(self.cycle_num)
+
     def filter_cap(self, cycle_no):
         """
         returns the discharge capacity of specified cycle no
@@ -82,6 +87,15 @@ class Solution:
         """
         return [cap_ for i, cap_ in enumerate(self.cap) if ((self.cycle_num[i] == cycle_no) and
                                                                          (self.cycle_step[i] == 'charge'))]
+
+    def filter_battery_cap(self, cycle_no):
+        """
+        Returns the battery cap at the end of the inputted cycle no.
+        :param cycle_no: (int) cycle number
+        :return: (double) battery cap found at the of the cycle num.
+        """
+        df = self.create_df()
+        return df[(df['Cycle No'] == cycle_no)]['Battery cap [Ahr]'].to_numpy()[-1]
 
     def filter_V(self, cycle_no):
         """
@@ -114,6 +128,9 @@ class Solution:
         """
         all_cycle_no = np.unique(self.cycle_num)
         return np.array([self.filter_R_cell(all_cycle_no[i]) for i in range(self.total_cycles)])
+
+    def calc_battery_cap_array(self):
+        return np.array([self.filter_battery_cap(i) for i in self.filter_cycle_nums()])
 
     def plot_tV(self):
         num_rows = 1

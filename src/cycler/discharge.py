@@ -5,11 +5,13 @@ from src.cycler.base import BaseCycler
 class Discharge(BaseCycler):
     cycle_steps = ['discharge']
 
-    def __init__(self, discharge_current, V_min):
+    def __init__(self, discharge_current, V_min, SOC_min, SOC_LIB):
         super().__init__()
         self.discharge_current = -discharge_current
         self.V_min = V_min
         self.num_cycles = 1
+        self.SOC_min = SOC_min
+        self.SOC_LIB = SOC_LIB
 
 class DischargeRest(BaseCycler):
     cycle_steps = ['discharge', 'rest']

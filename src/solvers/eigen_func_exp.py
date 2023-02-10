@@ -85,6 +85,7 @@ class EigenFuncExp(BaseSolver):
         #     raise ValueError("termination criteria needs to be either 'V' or 'SOC'")
         # initialize result storage lists
         x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
+        battery_cap_list = []
         cycle_list = []
         step_name_list = []
         t_list = []
@@ -128,6 +129,8 @@ class EigenFuncExp(BaseSolver):
                         self.SEI_model.solve(I=I, dt=dt)
                         # self.b_cell.R_cell += self.SEI_model.resistance
                         self.b_cell.R_cell += self.SEI_model.delta_resistance(js_prev=self.SEI_model.j_s_prev, dt=dt)
+                        self.b_cell.cap += self.SEI_model.delta_cap(self.b_cell.elec_n.S)
+                        # print(self.b_cell.cap)
                         scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
                     # R_cell_list.append(self.b_cell.R_cell)
 
@@ -203,6 +206,7 @@ class EigenFuncExp(BaseSolver):
                     cap_charge_list.append(cap_charge)
                     cap_discharge_list.append(cap_discharge)
                     R_cell_list.append(self.b_cell.R_cell)
+                    battery_cap_list.append(self.b_cell.cap)
 
                     # Calc temp and update T_list if not isothermal
                     if not self.b_model.isothermal:
@@ -218,4 +222,5 @@ class EigenFuncExp(BaseSolver):
         return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
                         x_surf_p=x_p_list, x_surf_n=x_n_list,
                         cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
+                        battery_cap=battery_cap_list,
                         T=T_list, R_cell=R_cell_list, name= sol_name, save_csv_dir=save_csv_dir)

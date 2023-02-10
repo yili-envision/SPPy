@@ -27,7 +27,7 @@ class ROM_SEI:
         self.j_s_prev = None
         self.thickness_init = thickness_init
         self.thickness = thickness_init
-        self.limiting_coefficient = 1.6e7
+        self.limiting_coefficient = 1e9
 
     def j_tot(self, I):
         return SPModel.scaled_j(I=I, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D, c_max=self.b_cell.elec_n.max_conc,
@@ -44,7 +44,7 @@ class ROM_SEI:
         return np.exp(-self.limiting_coefficient * self.thickness)
 
     def j_s(self, j_i_value):
-        decay = 1
+        decay = self.decay_function()
         return -decay * self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
 
     def j_i(self, I, j_s):
@@ -65,6 +65,14 @@ class ROM_SEI:
 
     def delta_batteryCap(self, js_prev, dt):
         return self.b_cell.elec_n.A * self.b_cell.elec_n.L * dt * js_prev
+
+    def delta_cap(self, A):
+        """
+        Returns the change in capacity
+        :param A: (double) Area of the electrochemical surface of the electrode
+        :return: (double) change in battery capacity
+        """
+        return self.j_s_prev * A
 
     def solve(self, I, dt):
         # solves for one time step

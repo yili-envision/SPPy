@@ -25,15 +25,14 @@ class Plots:
         elif sol.name is None:
             ax.plot(x_var, y_var)
 
-    def set_matplotlib_stype(self):
+    def set_matplotlib_settings(self):
         mpl.rcParams['lines.linewidth'] = 3
         plt.rc('axes', titlesize=15)
         plt.rc('axes', labelsize=15)
         # plt.rc('axes',)
 
     def plot_tV(self):
-        self.set_matplotlib_stype()
-
+        self.set_matplotlib_settings()
         num_rows = 1
         num_cols = 1
         fig = plt.figure()
@@ -46,6 +45,24 @@ class Plots:
         for sol in self.sols:
             self.plot_in_axis(ax1, sol, sol.t, sol.V)
 
+        plt.legend()
+        plt.show()
+
+    def plot_cycleCap(self, **extra_data):
+        self.set_matplotlib_settings()
+        num_rows = 1
+        num_cols = 1
+        fig = plt.figure()
+
+        ax1 = fig.add_subplot(num_rows, num_cols, 1)
+        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('V [V]')
+        ax1.set_title('V vs. Time')
+
+        for sol in self.sols:
+            cycle_num_array = sol.filter_cycle_nums()
+            battery_cap_array = sol.cap_battery_cap_array()
+            self.plot_in_axis(ax1, sol, cycle_num_array, battery_cap_array)
         plt.legend()
         plt.show()
 
