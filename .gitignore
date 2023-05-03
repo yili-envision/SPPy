@@ -237,3 +237,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Personal Files
+data/Calce_PL
+analysis/
+
