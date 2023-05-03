@@ -1,4 +1,5 @@
 # Single Particle Model with Thermal and Degradation Models
+### Copyright© 2023, Moin Ahmed, All rights reserved.
 
 ### Single Particle Model:
 #### _Diffusion Equation Formulation:_
