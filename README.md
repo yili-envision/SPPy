@@ -11,7 +11,7 @@
 - Lumped Thermal Model
 #### _Numerical Schemes:_
 - ODE solvers (rk4)
-### Degradation Models:
+### Degradation Models: (under construction)
 - ROM - SEI growth [2]
 #### _Numerical Schemes:_
 - ODE solvers (Euler)
