@@ -41,10 +41,11 @@ class Electrode:
         self.alpha = df['Anodic Transfer Coefficient']
         self.brugg = df['Bruggerman Coefficient']
         self.kappa_eff = self.kappa * (self.epsilon ** self.brugg)
+        self.electrode_type = "none"
         # Set current SOC and temperature
         # Check if SOC is within the threshold
         if (SOC_init<=0) or (SOC_init>=1):
-            raise custom_exceptions.InvalidSOCException
+            raise custom_exceptions.InvalidSOCException(self.electrode_type)
         self.SOC_ = SOC_init
         self.T = T
         # set OCP and dOCPdT functions
@@ -98,12 +99,20 @@ class Electrode:
 
 
 class PElectrode(Electrode):
+    """
+    This class is used to create a Positive electrode object. This object is used to store the electrode parameters and
+    provide relevant electrode methods. It inherits from the Electrode class.
+    """
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT=None):
         super().__init__(file_path=file_path, SOC_init=SOC_init, T=T, func_OCP=func_OCP, func_dOCPdT=func_dOCPdT)
         self.electrode_type = 'p'
 
 
 class NElectrode(Electrode):
+    """
+    This class is used to create a Negative electrode object. This object is used to store the electrode parameters and
+    provide relevant electrode methods. It inherits from the Electrode class.
+    """
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT=None):
         super().__init__(file_path=file_path, SOC_init=SOC_init, T=T, func_OCP=func_OCP, func_dOCPdT=func_dOCPdT)
         self.electrode_type = 'n'

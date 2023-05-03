@@ -1,5 +1,3 @@
-import pandas as pd
-
 from src.battery_components import electrolyte,electrode
 
 
