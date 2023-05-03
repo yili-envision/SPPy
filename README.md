@@ -5,7 +5,7 @@
 #### _Diffusion Equation Formulation:_
 - Eigen Function Expansion [1]
 - Two Term Polynomial (not yet implemented)
-- #### _Numerical Schemes:_
+#### _Numerical Schemes:_
 - ODE solvers (rk4)
 ### Thermal Models:
 - Lumped Thermal Model
