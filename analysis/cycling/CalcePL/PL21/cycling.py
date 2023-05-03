@@ -59,8 +59,9 @@ battery_cap_init = cell.cap
 # solve
 sol_partial = solver.solve(cycler=cycler_partial, verbose=False, t_increment=t_increment, termination_criteria = 'SOC')
 
-pd.DataFrame({'Cycle_no': sol_partial.filter_cycle_nums(),
-              'NDC' :sol_partial.calc_battery_cap_array()/battery_cap_init}).to_csv("cycling_sim_data.csv", index=False)
+# # save
+# pd.DataFrame({'Cycle_no': sol_partial.filter_cycle_nums(),
+#               'NDC' :sol_partial.calc_battery_cap_array()/battery_cap_init}).to_csv("cycling_sim_data.csv", index=False)
 
 # prints and plots
 print('cycle:', sol_partial.cycle_num[-1], 'SEI_thickness: ', SEI_model.thickness)

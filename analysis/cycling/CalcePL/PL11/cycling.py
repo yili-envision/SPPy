@@ -19,14 +19,15 @@ from exp_cap import cap
 T = 298.15
 V_min_partial = 2.75
 V_max_partial = 4.2
-num_cycles_full = 500
+num_cycles_full = 10
 charge_current = 0.75
 discharge_current = 0.75
 rest_time = 1795
 
 # Modelling parameters
 t_increment = 10
-SOC_init_p, SOC_init_n = 0.975, 0.0012 # manual
+# SOC_init_p, SOC_init_n = 0.975, 0.0012 # manual 1
+SOC_init_p, SOC_init_n = 0.975, 0.012 # manual 2
 
 
 # Setup battery components and model with the results from genetic algorithm
@@ -41,7 +42,7 @@ SEI_model = ROM_SEI(bCell= cell, file_path= SEI_DIR, resistance_init=1e-8, thick
 SEI_model.limiting_coefficient = 1.25e9
 
 cycler_full = CC(num_cycles=num_cycles_full, charge_current=charge_current, discharge_current=discharge_current,
-                 rest_time=rest_time, V_max=4.2, V_min=3.2)
+                 rest_time=rest_time, V_max=4.19, V_min=2)
 # cycler_full = cycler = CCNoFirstRest(num_cycles=num_cycles_full, charge_current=charge_current, discharge_current=discharge_current,
 #                        rest_time=rest_time, V_max=V_max_partial, V_min=V_min_partial, SOC_min=0, SOC_max=1,
 #                                         SOC_LIB=0)
@@ -59,8 +60,8 @@ sol_partial = solver.solve(cycler=cycler_full, verbose=False, t_increment=t_incr
 cycle_no_sim_array = sol_partial.filter_cycle_nums()
 NDC_sim_array = sol_partial.calc_battery_cap_array()/battery_cap_init
 
-# save cycling data
-pd.DataFrame({'Cycle_no': cycle_no_sim_array, 'NDC':NDC_sim_array}).to_csv("cycling_sim_data.csv", index=False)
+# # save cycling data
+# pd.DataFrame({'Cycle_no': cycle_no_sim_array, 'NDC':NDC_sim_array}).to_csv("cycling_sim_data.csv", index=False)
 
 # prints and plots
 print('cycle:', sol_partial.cycle_num[-1], 'SEI_thickness: ', SEI_model.thickness)

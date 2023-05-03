@@ -1,7 +1,7 @@
 class InvalidSOCException(Exception):
     "Raised when SOC is smaller than 0 or greater than 1."
-    def __init__(self):
-        self.msg = "SOC is beyound 0-1"
+    def __init__(self, electrode_type):
+        self.msg = f"{electrode_type} SOC is beyound 0-1"
         super().__init__(self.msg)
 
 

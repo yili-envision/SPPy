@@ -92,6 +92,7 @@ class EigenFuncExp(BaseSolver):
         I_list = []
         T_list = []
         R_cell_list = []
+        js_list = []
         # initialize calculation parameters
         integ_term_p = 0
         integ_term_n = 0
@@ -130,7 +131,7 @@ class EigenFuncExp(BaseSolver):
                         # self.b_cell.R_cell += self.SEI_model.resistance
                         self.b_cell.R_cell += self.SEI_model.delta_resistance(js_prev=self.SEI_model.j_s_prev, dt=dt)
                         self.b_cell.cap += self.SEI_model.delta_cap(self.b_cell.elec_n.S)
-                        # print(self.b_cell.cap)
+                        print(self.b_cell.cap)
                         scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
                     # R_cell_list.append(self.b_cell.R_cell)
 
@@ -164,7 +165,7 @@ class EigenFuncExp(BaseSolver):
                                                  T=self.b_cell.T, I= I)
 
                     if V < self.b_cell.V_min:
-                        threshold_potential_warning()
+                        threshold_potential_warning(V=V)
                         break
 
                     # Calc charge, discharge, LIB capacity
@@ -207,6 +208,10 @@ class EigenFuncExp(BaseSolver):
                     cap_discharge_list.append(cap_discharge)
                     R_cell_list.append(self.b_cell.R_cell)
                     battery_cap_list.append(self.b_cell.cap)
+                    if self.b_model.SEI_growth:
+                        js_list.append(self.SEI_model.j_s_prev)
+                    else:
+                        js_list.append(0)
 
                     # Calc temp and update T_list if not isothermal
                     if not self.b_model.isothermal:
@@ -223,4 +228,5 @@ class EigenFuncExp(BaseSolver):
                         x_surf_p=x_p_list, x_surf_n=x_n_list,
                         cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
                         battery_cap=battery_cap_list,
-                        T=T_list, R_cell=R_cell_list, name= sol_name, save_csv_dir=save_csv_dir)
+                        T=T_list, R_cell=R_cell_list, js=js_list,
+                        name= sol_name, save_csv_dir=save_csv_dir)

@@ -1,5 +1,4 @@
 import collections
-import collections
 import numpy as np
 import pandas as pd
 
@@ -8,11 +7,19 @@ from src.warnings_and_exceptions import custom_exceptions
 
 
 class Electrode:
+    """
+    This class is used to create an electrode object. This object is used to store the electrode parameters and provide
+    relevant electrode methods. It takes input parameters from the csv file. The electrode parameters are stored as
+    attributes of the object.
+    """
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT):
         """
         Electrode class constructor
         :param file_path: file path of the csv containing the electrode parameters.
+        :param SOC_init: state of charge of the electrode and is between 0 and 1.
         :param T: current electrode temperature.
+        :param func_OCP: function that describes the OCP of the electrode.
+        :param func_dOCPdT: a function that describes the change of OCP with temperature
         """
         # Read and parse the csv file.
         df = Electrode.parse_csv(file_path=file_path)
@@ -62,14 +69,12 @@ class Electrode:
 
     @property
     def SOC(self):
-        # if (self.SOC_ <= 0) or (self.SOC_ >= 1):
-        #     raise ValueError("Invalid SOC value.")
         return self.SOC_
 
     @SOC.setter
     def SOC(self, new_SOC):
         if (new_SOC <= 0) or (new_SOC >= 1):
-            raise custom_exceptions.InvalidSOCException
+            raise custom_exceptions.InvalidSOCException(self.electrode_type)
         self.SOC_ = new_SOC
 
     @property

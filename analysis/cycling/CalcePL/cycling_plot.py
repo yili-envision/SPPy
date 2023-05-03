@@ -33,12 +33,13 @@ plt.scatter(cycle_full_array, cap_exp_list_PL4/100, label="exp (40%-60%)")
 #       Plots for 20-80
 plt.plot(cycle_no_2080, NDC_2080, label="sim (20%-80%)")
 plt.scatter(cycle_full_array, cap_exp_list_PL21/100, label="exp (20%-80%)")
-      # Plots for 0-100
-plt.plot(cycle_no_0100, NDC_0100, label="sim (0%-100%)")
-plt.scatter(cycle_full_array, cap_exp_list_PL11/100, label="exp (0%-100%)")
+#       # Plots for 0-100
+# plt.plot(cycle_no_0100, NDC_0100, label="sim (0%-100%)")
+# plt.scatter(cycle_full_array, cap_exp_list_PL11/100, label="exp (0%-100%)")
 
 plt.xlabel('Cycle No.')
 plt.ylabel('Normalized Discharge Capacity')
 plt.title('NDC vs. cycle')
+plt.ylim(0.85, 1.01)
 plt.legend()
 plt.show()

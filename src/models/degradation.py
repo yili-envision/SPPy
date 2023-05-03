@@ -25,6 +25,7 @@ class ROM_SEI:
         self.rho = csv_file['Density [kg m^-3]'] # Average SEI Density
         self.resistance = resistance_init
         self.j_s_prev = None
+        self.j_s_prev = 0
         self.thickness_init = thickness_init
         self.thickness = thickness_init
         self.limiting_coefficient = 1e9
@@ -44,7 +45,8 @@ class ROM_SEI:
         return np.exp(-self.limiting_coefficient * self.thickness)
 
     def j_s(self, j_i_value):
-        decay = self.decay_function()
+        # decay = self.decay_function()
+        decay = 1
         return -decay * self.i_0s * np.exp(-Constants.F * self.eta_s(j_i_value) / (2 * Constants.R * self.b_cell.T))
 
     def j_i(self, I, j_s):
@@ -76,7 +78,7 @@ class ROM_SEI:
 
     def solve(self, I, dt):
         # solves for one time step
-        if I < 0:
+        if I > 0:
             self.j_s_prev = self.solve_j_s(I)
             self.resistance += self.delta_resistance(js_prev=self.j_s_prev, dt=dt)
             self.thickness += self.delta_thickness(js_prev=self.j_s_prev, dt=dt)
