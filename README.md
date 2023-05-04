@@ -18,7 +18,7 @@ still an ongoing work and the documentation is not yet complete.
 - <b>Single Particle Model with thermal (lumped thermal) and degradation (reduced-order SEI) models
 ![](./images/SPPy.png)
 - Parameter estimation using genetic algorithm
-- ![](./images/GA.png)
+![](./images/GA.png)
 - Visualization tools</b>
 
 ## Solution Scheme
