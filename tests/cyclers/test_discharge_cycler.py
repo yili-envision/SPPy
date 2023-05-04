@@ -31,3 +31,7 @@ class TestCustomDischargeCycler(unittest.TestCase):
         self.assertEqual(V_min, dc.V_min)
         self.assertEqual(0.0, dc.time_elapsed)
         self.assertEqual('discharge', dc.cycle_steps[0])
+        self.assertEqual(2.0, dc.t_max)
+
+    def test_get_current(self):
+        pass

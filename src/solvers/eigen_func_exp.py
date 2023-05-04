@@ -10,6 +10,7 @@ from src.warnings_and_exceptions.custom_warnings import *
 from src.warnings_and_exceptions.custom_exceptions import *
 from src.models.thermal import Lumped
 from src.cycler.base import BaseCycler
+from src.cycler.discharge import CustomDischarge
 
 
 class EigenFuncExp(BaseSolver):
@@ -111,7 +112,10 @@ class EigenFuncExp(BaseSolver):
                 t_prev =0
                 step_completed = False
                 while not step_completed:
-                    I = cycler.get_current(step)
+                    if isinstance(cycler, CustomDischarge):
+                        I = cycler.get_current(step, t_prev)
+                    else:
+                        I = cycler.get_current(step)
                     t_curr = t_prev + t_increment
                     dt = t_increment
 
@@ -189,6 +193,10 @@ class EigenFuncExp(BaseSolver):
                         if ((step == "charge") and (cycler.SOC_LIB > cycler.SOC_max)):
                             step_completed = True
                         if ((step == "discharge") and (cycler.SOC_LIB < cycler.SOC_min)):
+                            step_completed = True
+                    # break condition for charge and discharge if stop criteria is time based
+                    elif termination_criteria == 'time':
+                        if step == "discharge" and cycler.time_elapsed > cycler.t_max:
                             step_completed = True
 
                     #update time

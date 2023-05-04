@@ -38,6 +38,26 @@ class CustomDischarge(BaseCycler):
             raise ValueError("t_array and I_array needs to be of the same length.")
         super().__init__()
         self.t_array = t_array
+        self.t_max = t_array[-1] # maximum time
         self.I_array = -I_array
         self.V_min = V_min
+        self.charge_current = 0.0
         self.num_cycles = 1
+
+    def get_current(self, step_name, t_input):
+        """
+        This method returns the current at the given time. This method overwrites the Base charger's respective method.
+        :param step_name: The step name.
+        :param t_input: time input.
+        :return: The value of the current.
+        """
+        if step_name == "discharge":
+            # find the index in t_array that matches the t_input
+            t_index = np.where(self.t_array == t_input)
+            # find the index in t_array that matches the t_input
+            if np.any(t_index):
+                return self.I_array[t_index][0]
+            else:
+                return 0.0
+        else:
+            return 0.0

@@ -2,6 +2,9 @@ from src.battery_components import electrolyte,electrode
 
 
 class BatteryCell:
+    """
+    Class for the BatteryCell object and contains the relevant parameters.
+    """
     def __init__(self, filepath_p, SOC_init_p, func_OCP_p, func_dOCPdT_p,
                  filepath_n, SOC_init_n, func_OCP_n, func_dOCPdT_n,
                  filepath_electrolyte, filepath_cell,

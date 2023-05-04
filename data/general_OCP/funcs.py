@@ -3,6 +3,7 @@ import numpy as np
 
 from src.calc_helpers.constants import Constants
 
+
 def extract_OCP(x, specie_name, T):
     # function calculations
     df = pd.read_csv('../../../data/general_OCP/coefficents.csv', index_col=0)[specie_name]

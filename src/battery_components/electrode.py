@@ -15,7 +15,8 @@ class Electrode:
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT):
         """
         Electrode class constructor
-        :param file_path: file path of the csv containing the electrode parameters.
+        :param file_path: file path of the csv containing the electrode parameters. Please adhere to the csv format
+        in the data/param_pos-electrode.csv or data/param_neg-electrode.csv file.
         :param SOC_init: state of charge of the electrode and is between 0 and 1.
         :param T: current electrode temperature.
         :param func_OCP: function that describes the OCP of the electrode.
