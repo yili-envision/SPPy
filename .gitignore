@@ -240,5 +240,5 @@ cython_debug/
 # Personal Files
 data/Calce_PL
 analysis/
-
 !/analysis/
+!/data/Calce_PL/

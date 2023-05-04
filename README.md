@@ -1,6 +1,27 @@
 # Single Particle Model with Thermal and Degradation Models
-### Copyright© 2023, Moin Ahmed, All rights reserved.
+#### Copyright© 2023 by Moin Ahmed. All rights reserved.
 
+## Description
+
+<p>
+This repository contains the code for running single particle model with thermal and degradation models on 
+Lithium-ion Batteries (LIB). Moreover, the repository contains the tools for visualization and 
+parameter estimations (using genetic algorithm).
+</p>
+<p>
+All the code is written in Python programming language, and it is written in a modular fashion. The code is
+still an ongoing work and the documentation is not yet complete.
+</p>
+
+## Features
+
+- <b>Single Particle Model with thermal (lumped thermal) and degradation (reduced-order SEI) models
+![](./images/SPPy.png)
+- Parameter estimation using genetic algorithm
+- ![](./images/GA.png)
+- Visualization tools</b>
+
+## Solution Scheme
 ### Single Particle Model:
 #### _Diffusion Equation Formulation:_
 - Eigen Function Expansion [1]
