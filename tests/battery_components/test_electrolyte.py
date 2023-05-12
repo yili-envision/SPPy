@@ -1,6 +1,6 @@
 import unittest
 
-from src.battery_components import electrolyte
+from SPPy.battery_components import electrolyte
 from file_path_variables import TEST_ELECTROLYTE_DIR
 
 

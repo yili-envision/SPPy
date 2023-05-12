@@ -3,11 +3,11 @@ import numpy as np
 
 from file_path_variables import *
 from data.test import funcs
-from src.warnings_and_exceptions.custom_exceptions import *
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.solvers.base import BaseSolver
-from src.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.warnings_and_exceptions.custom_exceptions import *
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.solvers.base import BaseSolver
+from SPPy.solvers.eigen_func_exp import EigenFuncExp
 
 
 class TestBaseSolver(unittest.TestCase):

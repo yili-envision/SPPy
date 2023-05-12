@@ -1,4 +1,4 @@
-from src.cycler.base import BaseCycler
+from SPPy.cycler.base import BaseCycler
 
 
 class CC(BaseCycler):

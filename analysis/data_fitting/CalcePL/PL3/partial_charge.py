@@ -4,13 +4,13 @@ import pandas as pd
 from file_path_variables import *
 from data.Calce_PL import funcs
 from data.general_OCP.LCO import OCP_ref_p
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.solvers.eigen_func_exp import EigenFuncExp
-from src.cycler.charge import Charge
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.cycler.charge import Charge
 
-from src.solution import Solution
-from src.visualization.plots import Plots
+from SPPy.solution import Solution
+from SPPy.visualization.plots import Plots
 from funcs import correct_time
 
 

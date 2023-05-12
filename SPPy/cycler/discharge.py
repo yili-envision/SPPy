@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.cycler.base import BaseCycler
+from SPPy.cycler.base import BaseCycler
 
 class Discharge(BaseCycler):
     cycle_steps = ['discharge']

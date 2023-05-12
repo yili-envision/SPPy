@@ -1,4 +1,4 @@
-from src.battery_components.battery_cell import BatteryCell
+from SPPy.battery_components.battery_cell import BatteryCell
 
 
 class Lumped:

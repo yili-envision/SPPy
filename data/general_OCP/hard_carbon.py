@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.calc_helpers.constants import Constants
+from SPPy.calc_helpers.constants import Constants
 
 
 def OCP_ref_n(x):

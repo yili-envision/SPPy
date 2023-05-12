@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-from src.solution import Solution
-from src.calc_helpers.constants import Constants
+from SPPy.solution import Solution
+from SPPy.calc_helpers.constants import Constants
 
 
 class Plots:

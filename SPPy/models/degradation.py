@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.battery_components.battery_cell import BatteryCell
-from src.battery_components.electrode import Electrode
-from src.calc_helpers.constants import Constants
-from src.models.single_particle_model import SPModel
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.battery_components.electrode import Electrode
+from SPPy.calc_helpers.constants import Constants
+from SPPy.models.single_particle_model import SPModel
 
 
 class ROM_SEI:

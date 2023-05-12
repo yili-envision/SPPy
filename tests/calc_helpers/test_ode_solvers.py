@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from src.calc_helpers.ode_solvers import euler, rk4
+from SPPy.calc_helpers.ode_solvers import euler, rk4
 
 
 class TestEuler(unittest.TestCase):

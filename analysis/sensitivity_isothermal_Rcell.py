@@ -2,10 +2,10 @@ import numpy as np
 
 from file_path_variables import *
 from data.test import funcs
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.solvers.eigen_func_exp import EigenFuncExp
-from src.visualization.plots import Plots
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.visualization.plots import Plots
 
 
 # Operating parameters

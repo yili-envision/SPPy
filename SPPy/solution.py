@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-from src.calc_helpers.constants import Constants
+from SPPy.calc_helpers.constants import Constants
 
 
 class Solution:

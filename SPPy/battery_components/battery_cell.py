@@ -1,4 +1,4 @@
-from src.battery_components import electrolyte,electrode
+from SPPy.battery_components import electrolyte,electrode
 
 
 class BatteryCell:

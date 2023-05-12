@@ -2,8 +2,8 @@ import collections
 import numpy as np
 import pandas as pd
 
-from src.calc_helpers import constants
-from src.warnings_and_exceptions import custom_exceptions
+from SPPy.calc_helpers import constants
+from SPPy.warnings_and_exceptions import custom_exceptions
 
 
 class Electrode:

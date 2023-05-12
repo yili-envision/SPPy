@@ -6,11 +6,11 @@ import matplotlib as mpl
 from file_path_variables import *
 from data.Calce_PL import funcs
 from data.general_OCP.LCO import OCP_ref_p
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.solvers.eigen_func_exp import EigenFuncExp
-from src.models.degradation import ROM_SEI
-from src.cycler.cc import CC,CCNoFirstRest
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.models.degradation import ROM_SEI
+from SPPy.cycler.cc import CC,CCNoFirstRest
 
 from exp_cap import cap
 

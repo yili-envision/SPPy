@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from src.cycler.discharge import Discharge, CustomDischarge
+from SPPy.cycler.discharge import Discharge, CustomDischarge
 
 
 class TestDischargeCycler(unittest.TestCase):

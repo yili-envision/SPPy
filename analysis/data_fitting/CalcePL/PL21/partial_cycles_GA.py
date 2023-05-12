@@ -6,11 +6,11 @@ from scipy import interpolate
 from file_path_variables import *
 from data.Calce_PL import funcs
 from data.general_OCP.LCO import OCP_ref_p
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.solvers.eigen_func_exp import EigenFuncExp
-from src.cycler.cc import CCNoFirstRest
-from src.calc_helpers.genetic_algorithm import ga
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.cycler.cc import CCNoFirstRest
+from SPPy.calc_helpers.genetic_algorithm import ga
 
 from funcs import correct_time
 

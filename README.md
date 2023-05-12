@@ -21,6 +21,15 @@ still an ongoing work and the documentation is not yet complete.
 ![](./images/GA.png)
 - Visualization tools</b>
 
+## Directory Structure:
+```examples``` - contains the example usage of this Python module.
+
+```data``` - contains the datasets used in the examples.
+
+```imgs``` - contains the images used in the documentations.
+
+```SPPy``` - contains the source code.
+
 ## Solution Scheme
 ### Single Particle Model:
 #### _Diffusion Equation Formulation:_

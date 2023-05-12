@@ -1,8 +1,8 @@
-from src.battery_components.battery_cell import BatteryCell
-from src.models.single_particle_model import SPModel
-from src.warnings_and_exceptions.custom_exceptions import *
-from src.warnings_and_exceptions.custom_warnings import *
-from src.models.degradation import ROM_SEI
+from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.models.single_particle_model import SPModel
+from SPPy.warnings_and_exceptions.custom_exceptions import *
+from SPPy.warnings_and_exceptions.custom_warnings import *
+from SPPy.models.degradation import ROM_SEI
 import time
 
 

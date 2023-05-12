@@ -1,6 +1,6 @@
 import unittest
 
-from src.cycler.base import BaseCycler
+from SPPy.cycler.base import BaseCycler
 
 
 class TestBaseCycler(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from src.calc_helpers import errors
+from SPPy.calc_helpers import errors
 
 
 class TestErrors(unittest.TestCase):

@@ -2,8 +2,8 @@ import unittest
 
 from file_path_variables import *
 from data.test import funcs
-from src.battery_components import battery_cell
-from src.models import single_particle_model
+from SPPy.battery_components import battery_cell
+from SPPy.models import single_particle_model
 
 
 class TestSPModel(unittest.TestCase):

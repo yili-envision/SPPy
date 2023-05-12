@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from src.calc_helpers.constants import Constants
+from SPPy.calc_helpers.constants import Constants
 
 
 def extract_OCP(x, specie_name, T):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.calc_helpers.constants import Constants
+from SPPy.calc_helpers.constants import Constants
 
 
 class SPModel:

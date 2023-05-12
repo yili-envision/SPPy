@@ -2,15 +2,15 @@ import numpy as np
 from scipy.optimize import bisect
 from tqdm import tqdm
 
-from src.solvers.base import BaseSolver, timer
-from src.calc_helpers.constants import Constants
-from src.calc_helpers import ode_solvers
-from src.solution import Solution
-from src.warnings_and_exceptions.custom_warnings import *
-from src.warnings_and_exceptions.custom_exceptions import *
-from src.models.thermal import Lumped
-from src.cycler.base import BaseCycler
-from src.cycler.discharge import CustomDischarge
+from SPPy.solvers.base import BaseSolver, timer
+from SPPy.calc_helpers.constants import Constants
+from SPPy.calc_helpers import ode_solvers
+from SPPy.solution import Solution
+from SPPy.warnings_and_exceptions.custom_warnings import *
+from SPPy.warnings_and_exceptions.custom_exceptions import *
+from SPPy.models.thermal import Lumped
+from SPPy.cycler.base import BaseCycler
+from SPPy.cycler.discharge import CustomDischarge
 
 
 class EigenFuncExp(BaseSolver):

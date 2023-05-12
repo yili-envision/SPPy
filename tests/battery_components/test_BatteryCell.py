@@ -1,7 +1,7 @@
 import unittest
 
 from file_path_variables import TEST_BATTERY_CELL_DIR, TEST_ELECTROLYTE_DIR, TEST_NEG_ELEC_DIR, TEST_POS_ELEC_DIR
-from src.battery_components import battery_cell
+from SPPy.battery_components import battery_cell
 from data.test import funcs
 
 

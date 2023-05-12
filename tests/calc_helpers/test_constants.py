@@ -1,5 +1,5 @@
 import unittest
-from src.calc_helpers import constants
+from SPPy.calc_helpers import constants
 
 
 class TestConstants(unittest.TestCase):
