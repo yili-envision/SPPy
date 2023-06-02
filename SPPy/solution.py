@@ -37,6 +37,7 @@ class Solution:
             'SOC_p': self.x_surf_p,
             'SOC_n': self.x_surf_n,
             'V [V]': self.V,
+            'Temp [K]': self.T,
             'capacity [Ahr]': self.cap,
             'Charge cap. [Ahr]': self.cap_charge,
             'Discharge cap. [Ahr]': self.cap_discharge,
