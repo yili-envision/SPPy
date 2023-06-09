@@ -1,4 +1,5 @@
 TEST_POS_ELEC_DIR = "../data/test/param_pos-electrode.csv"
 TEST_NEG_ELEC_DIR = "../data/test/param_neg-electrode.csv"
 TEST_ELECTROLYTE_DIR = "../data/test/param_electrolyte.csv"
+TEST_ELECTROLYTE_ERROR_DIR = "../data/test/param_electrolyte_with_errors.csv"
 TEST_BATTERY_CELL_DIR = "../data/test/param_battery-cell.csv"
