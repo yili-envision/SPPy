@@ -1,6 +1,6 @@
 import unittest
 
-from file_path_variables import TEST_BATTERY_CELL_DIR, TEST_ELECTROLYTE_DIR, TEST_NEG_ELEC_DIR, TEST_POS_ELEC_DIR
+from tests.test_config.file_path_variables import TEST_BATTERY_CELL_DIR, TEST_ELECTROLYTE_DIR, TEST_NEG_ELEC_DIR, TEST_POS_ELEC_DIR
 from SPPy.battery_components import battery_cell
 from data.test import funcs
 
@@ -29,18 +29,18 @@ class TestBatteryCell(unittest.TestCase):
         self.assertEqual(test_cell.V_max, 4.2)
         self.assertEqual(test_cell.V_min, 2.5)
 
-    # def test_R_cell(self):
-    #     T = 298.15
-    #     SOC_init_p = 0.4956
-    #     SOC_init_n = 0.7568
-    #     test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
-    #                                          func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
-    #                                          filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-    #                                          func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-    #                                          filepath_electrolyte=TEST_ELECTROLYTE_DIR,
-    #                                          filepath_cell=TEST_BATTERY_CELL_DIR,
-    #                                          T=T)
-    #     self.assertEqual(test_cell.R_cell,1.0027761335385129e-05)
+    def test_R_cell(self):
+        T = 298.15
+        SOC_init_p = 0.4956
+        SOC_init_n = 0.7568
+        test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
+                                             func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
+                                             filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
+                                             func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
+                                             filepath_electrolyte=TEST_ELECTROLYTE_DIR,
+                                             filepath_cell=TEST_BATTERY_CELL_DIR,
+                                             T=T)
+        self.assertEqual(0.0028230038442483246, test_cell.R_cell)
 
     def test_T(self):
         """
