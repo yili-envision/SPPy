@@ -16,9 +16,9 @@ still an ongoing work and the documentation is not yet complete.
 ## Features
 
 - <b>Single Particle Model with thermal (lumped thermal) and degradation (reduced-order SEI) models
-![](./images/SPPy.png)
+![](Assests/SPPy.png)
 - Parameter estimation using genetic algorithm
-![](./images/GA.png)
+![](Assests/GA.png)
 - Visualization tools</b>
 
 ## Directory Structure:

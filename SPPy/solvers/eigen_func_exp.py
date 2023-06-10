@@ -77,33 +77,51 @@ class EigenFuncExp(BaseSolver):
             sum_term_n += u_k_n[iter_root] - (2 * scaled_j_n / (root_value ** 2))
         return u_k_p, u_k_n, sum_term_p, sum_term_n
 
+    def calc_terminal_potential(self, I):
+        m_p = self.b_model.m(I=I, k=self.b_cell.elec_p.k, S=self.b_cell.elec_p.S, c_e=self.b_cell.electrolyte.conc,
+                             c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
+        m_n = self.b_model.m(I=I, k=self.b_cell.elec_n.k, S=self.b_cell.elec_n.S, c_e=self.b_cell.electrolyte.conc,
+                             c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
+        V = self.b_model.calc_term_V(p_OCP=self.b_cell.elec_p.OCP,
+                                     n_OCP=self.b_cell.elec_n.OCP,
+                                     m_p=m_p, m_n=m_n, R_cell=self.b_cell.R_cell,
+                                     T=self.b_cell.T, I=I)
+        return V
+
+    def calc_SOC_surf(self, scaled_j_p, scaled_j_n, u_k_p, u_k_n, integ_term_p, integ_term_n, x_p_init, x_n_init,
+                      dt, t_prev):
+        # Calculate and update the addition terms
+        u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
+                                                                       scaled_j_n)
+        # Update integration terms for both electrode
+        integ_term_p += 3 * (self.b_cell.elec_p.D * scaled_j_p / (self.b_cell.elec_p.R ** 2)) * dt
+        integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
+        # now solve for surface SOC for both electrodes
+        self.b_cell.elec_p.SOC = x_p_init + scaled_j_p / 5 + integ_term_p + sum_term_p # positive electrode
+        self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n # negative electrode
+        return u_k_p, u_k_n, sum_term_p, sum_term_n, integ_term_p, integ_term_n
+
     @timer
     def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1,
-              termination_criteria = 'V', adaptive_step=False):
+              termination_criteria='V', adaptive_step=False):
+
+        # check for input parameter types
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
-        # if (termination_criteria != 'V') or (termination_criteria != 'SOC'):
-        #     raise ValueError("termination criteria needs to be either 'V' or 'SOC'")
+
         # initialize result storage lists
         x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
         battery_cap_list = []
-        cycle_list = []
-        step_name_list = []
-        t_list = []
-        I_list = []
-        T_list = []
-        R_cell_list = []
-        js_list = []
+        t_list, I_list, T_list, R_cell_list, js_list = [], [], [], [], []
+        cycle_list, step_name_list = [], []  # cycler specific information
+
         # initialize calculation parameters
-        integ_term_p = 0
-        integ_term_n = 0
-        u_k_p = np.zeros(self.N)
-        u_k_n = np.zeros(self.N)
-        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC
-        # # intial cap
-        # cap = 0
-        # set-up thermal object
-        t_model = Lumped(b_cell=self.b_cell)
+        integ_term_p, integ_term_n = 0, 0 # integration terms
+        u_k_p, u_k_n = np.zeros(self.N), np.zeros(self.N)
+        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC # initial surface SOC of electrodes
+
+        t_model = Lumped(b_cell=self.b_cell) # thermal model object
+
         for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
@@ -139,38 +157,25 @@ class EigenFuncExp(BaseSolver):
                         scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
                     # R_cell_list.append(self.b_cell.R_cell)
 
-                    # Calc summation term
-                    u_k_p, u_k_n, sum_term_p, sum_term_n = self.get_summation_term(t_prev, dt, u_k_p, u_k_n, scaled_j_p,
-                                                                                   scaled_j_n)
-
-                    # calc integration term
-                    integ_term_p += 3*(self.b_cell.elec_p.D * scaled_j_p/(self.b_cell.elec_p.R**2))*dt
-                    integ_term_n += 3 * (self.b_cell.elec_n.D * scaled_j_n / (self.b_cell.elec_n.R ** 2)) * dt
-
-                    # try/except in case of Invalid SOC
                     try:
-                        # Solve for x_p_surf
-                        self.b_cell.elec_p.SOC = x_p_init + scaled_j_p/5 + integ_term_p + sum_term_p
-
-                        # Solve for x_n_surf
-                        self.b_cell.elec_n.SOC = x_n_init + scaled_j_n / 5 + integ_term_n + sum_term_n
+                        u_k_p, u_k_n, sum_term_p, sum_term_n, integ_term_p, integ_term_n = \
+                            self.calc_SOC_surf(scaled_j_p=scaled_j_p, scaled_j_n=scaled_j_n, u_k_p=u_k_p, u_k_n=u_k_n,
+                                               integ_term_p=integ_term_p, integ_term_n=integ_term_n, x_p_init=x_p_init,
+                                               x_n_init=x_n_init, dt=dt, t_prev=t_prev) # Calc the surface SOC
                     except InvalidSOCException as e:
                         print(e)
                         break
 
-                    # Calc V
-                    m_p = self.b_model.m(I= I, k=self.b_cell.elec_p.k , S=self.b_cell.elec_p.S, c_e= self.b_cell.electrolyte.conc,
-                                         c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
-                    m_n = self.b_model.m(I= I, k=self.b_cell.elec_n.k , S=self.b_cell.elec_n.S, c_e= self.b_cell.electrolyte.conc,
-                                         c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
-                    V = self.b_model.calc_term_V(p_OCP= self.b_cell.elec_p.OCP,
-                                                 n_OCP= self.b_cell.elec_n.OCP,
-                                                 m_p= m_p, m_n = m_n, R_cell= self.b_cell.R_cell,
-                                                 T=self.b_cell.T, I= I)
-
+                    V = self.calc_terminal_potential(I=I) # calc battery cell terminal voltage
                     if V < self.b_cell.V_min:
                         threshold_potential_warning(V=V)
                         break
+
+                    # Calc temp and update T_list if not isothermal
+                    if not self.b_model.isothermal:
+                        func_T = t_model.heat_balance(V=V, I=I)
+                        self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T,
+                                                        step_size=dt)
 
                     # Calc charge, discharge, LIB capacity
                     cap = self.b_model.calc_cap(cap_prev=cap, Q=self.b_cell.cap ,I=I, dt=dt)
@@ -211,6 +216,7 @@ class EigenFuncExp(BaseSolver):
                     x_p_list.append(self.b_cell.elec_p.SOC)
                     x_n_list.append(self.b_cell.elec_n.SOC)
                     V_list.append(V)
+                    T_list.append(self.b_cell.T)
                     cap_list.append(cap)
                     cap_charge_list.append(cap_charge)
                     cap_discharge_list.append(cap_discharge)
@@ -220,12 +226,6 @@ class EigenFuncExp(BaseSolver):
                         js_list.append(self.SEI_model.j_s_prev)
                     else:
                         js_list.append(0)
-
-                    # Calc temp and update T_list if not isothermal
-                    if not self.b_model.isothermal:
-                        func_T = t_model.heat_balance(V=V, I=I)
-                        self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T, step_size=dt)
-                    T_list.append(self.b_cell.T)
 
                     if verbose:
                         print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no,
@@ -238,3 +238,95 @@ class EigenFuncExp(BaseSolver):
                         battery_cap=battery_cap_list,
                         T=T_list, R_cell=R_cell_list, js=js_list,
                         name= sol_name, save_csv_dir=save_csv_dir)
+
+    def simple_solve(self, cycler: CustomDischarge, verbose: bool = False):
+
+        # check for input parameter types
+        if not isinstance(cycler, CustomDischarge):
+            raise TypeError("cycler needs to be a CustomDischarge cycler object.")
+
+        # initialize result storage lists
+        x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
+        battery_cap_list = []
+        t_list, I_list, T_list, R_cell_list, js_list = [], [], [], [], []
+        cycle_list, step_name_list = [], []  # cycler specific information
+
+        # initialize calculation parameters
+        integ_term_p, integ_term_n = 0, 0 # integration terms
+        u_k_p, u_k_n = np.zeros(self.N), np.zeros(self.N)
+        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC # initial surface SOC of electrodes
+
+        t_model = Lumped(b_cell=self.b_cell) # thermal model object
+
+        cap = 0
+        cap_charge = 0
+        cap_discharge = 0
+        t_prev =0
+        step_completed = False
+        for k in range(len(cycler.t_array)-1):
+            t_curr = cycler.t_array[k]
+            dt = cycler.t_array[k+1] - cycler.t_array[k]
+            I = cycler.I_array[k]
+
+            # Calc total electrode surface flux
+            scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
+                                       c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
+            scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
+                                       c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
+
+            # Account for SEI growth
+            if self.b_model.SEI_growth:
+                self.SEI_model.solve(I=I, dt=dt)
+                # self.b_cell.R_cell += self.SEI_model.resistance
+                self.b_cell.R_cell += self.SEI_model.delta_resistance(js_prev=self.SEI_model.j_s_prev, dt=dt)
+                self.b_cell.cap += self.SEI_model.delta_cap(self.b_cell.elec_n.S)
+                print(self.b_cell.cap)
+                scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
+            # R_cell_list.append(self.b_cell.R_cell)
+
+            try:
+                u_k_p, u_k_n, sum_term_p, sum_term_n, integ_term_p, integ_term_n = \
+                    self.calc_SOC_surf(scaled_j_p=scaled_j_p, scaled_j_n=scaled_j_n, u_k_p=u_k_p, u_k_n=u_k_n,
+                                       integ_term_p=integ_term_p, integ_term_n=integ_term_n, x_p_init=x_p_init,
+                                       x_n_init=x_n_init, dt=dt, t_prev=t_prev) # Calc the surface SOC
+            except InvalidSOCException as e:
+                print(e)
+                break
+
+            V = self.calc_terminal_potential(I=I) # calc battery cell terminal voltage
+            if V < self.b_cell.V_min:
+                threshold_potential_warning(V=V)
+                break
+
+            # Calc temp and update T_list if not isothermal
+            if not self.b_model.isothermal:
+                func_T = t_model.heat_balance(V=V, I=I)
+                self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T,
+                                                step_size=dt)
+
+            #update time
+            t_prev = t_curr
+            cycler.time_elapsed = cycler.t_array[k]
+
+            # Update results lists
+            t_list.append(cycler.time_elapsed)
+            I_list.append(I)
+            x_p_list.append(self.b_cell.elec_p.SOC)
+            x_n_list.append(self.b_cell.elec_n.SOC)
+            V_list.append(V)
+            T_list.append(self.b_cell.T)
+            cap_list.append(cap)
+            cap_charge_list.append(cap_charge)
+            cap_discharge_list.append(cap_discharge)
+            R_cell_list.append(self.b_cell.R_cell)
+            battery_cap_list.append(self.b_cell.cap)
+            if self.b_model.SEI_growth:
+                js_list.append(self.SEI_model.j_s_prev)
+            else:
+                js_list.append(0)
+
+            if verbose:
+                print("time elapsed [s]: ", cycler.time_elapsed, "current [A]", I,", terminal voltage [V]: ",
+                      V, ", SOC_LIB: ", cycler.SOC_LIB, "cap: ", cap)
+
+        return V_list

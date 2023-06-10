@@ -7,11 +7,8 @@ import SPPy
 I = 1.656
 T = 298.15
 V_min = 3
-V_max = 4
-num_cycles = 2
-charge_current = 1.656
-discharge_current = 1.656
-rest_time = 30
+SOC_min = 0.1
+SOC_LIB = 0.9
 
 # Modelling parameters
 SOC_init_p, SOC_init_n = 0.4956, 0.7568 # conditions in the literature source. Guo et al
@@ -24,10 +21,9 @@ cell = SPPy.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, fun
 model = SPPy.SPModel(isothermal=True, degradation=False)
 
 # set-up solver and solve
-cycler = SPPy.CC(num_cycles=num_cycles, charge_current=charge_current, discharge_current=discharge_current,
-                 rest_time=rest_time, V_max=V_max, V_min=V_min)
+dc = SPPy.CustomDischarge(SOC_min=SOC_min, SOC_LIB=SOC_LIB)
 solver = SPPy.EigenFuncExp(b_cell= cell, b_model= model, N=5)
-sol = solver.solve(cycler=cycler)
+sol = solver.solve(cycler=dc)
 
 # Plot
 sol.comprehensive_plot()
