@@ -22,7 +22,7 @@ model = SPPy.SPModel(isothermal=False, degradation=False)
 
 # set-up solver and solve
 dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_min=0.0, SOC_LIB=1)
-solver = SPPy.EigenFuncExp(b_cell= cell, b_model= model, N=5)
+solver = SPPy.SPPySolver(b_cell= cell, b_model= model, N=5)
 sol = solver.solve(sol_name='test', cycler=dc, save_csv_dir='')
 
 # Plot

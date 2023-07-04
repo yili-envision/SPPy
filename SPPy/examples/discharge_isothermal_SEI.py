@@ -2,7 +2,7 @@ from file_path_variables import *
 from data.test import funcs
 from SPPy.battery_components.battery_cell import BatteryCell
 from SPPy.models.single_particle_model import SPModel
-from SPPy.solvers.eigen_func_exp import EigenFuncExp
+from SPPy.solvers.battery_solver import SPPySolver
 from SPPy.cycler.discharge import Discharge
 from SPPy.models.degradation import ROM_SEI
 
@@ -25,7 +25,7 @@ SEI_model = ROM_SEI(bCell= cell, file_path= SEI_DIR, resistance_init=1e-8)
 
 # set-up solver and solve
 dc = Discharge(discharge_current=I, V_min=V_min)
-solver = EigenFuncExp(b_cell= cell, b_model= model, N=5, SEI_model=SEI_model)
+solver = SPPySolver(b_cell= cell, b_model= model, N=5, SEI_model=SEI_model)
 sol = solver.solve(cycler=dc)
 
 # Plot

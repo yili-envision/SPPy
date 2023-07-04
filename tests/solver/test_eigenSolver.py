@@ -109,10 +109,9 @@ class TestEigenExpSolver(unittest.TestCase):
         N = 5
         SOC_init_p = 0.4956
         SOC_init_n = 0.7568
-        # I = -1.656 * np.ones(len(t))
         I = 1.656
         T = 298.15
-        V_min = 3.8
+        V_min = 4.0
         SOC_min = 0.1
         SOC_LIB = 0.9
         test_cell = BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,

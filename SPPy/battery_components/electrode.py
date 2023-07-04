@@ -22,12 +22,12 @@ class Electrode_:
     epsilon: float # Volume Fraction
     max_conc: float # Max. Conc. [mol m^-3]
     R: float # Radius [m]
-    S: Optional[float] # Electroactive Area [m^2]
+    S: Optional[float] # Electroactive Area [m2]
     T_ref: float # Reference Temperature [K]
-    D_ref: float # Reference Diffusitivity [m^2 s^-1]
-    k_ref: float # Reference Rate Constant [m^2.5 mol^-0.5 s^-1]
-    Ea_D: float # Activation Energy of Diffusion [J mol^-1]
-    Ea_R: float # Activation Energy of Reaction [J mol^-1]
+    D_ref: float # Reference Diffusitivity [m2/s]
+    k_ref: float # Reference Rate Constant [m2.5 / (mol0.5 s)
+    Ea_D: float # Activation Energy of Diffusion [J / mol]
+    Ea_R: float # Activation Energy of Reaction [J / mol]
     alpha: float # Anodic Transfer Coefficient
     brugg: float # Bruggerman Coefficient
     SOC_init: float # intial SOC
