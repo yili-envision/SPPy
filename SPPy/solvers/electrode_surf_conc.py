@@ -68,7 +68,7 @@ class EigenFuncExp:
         The list which contains the tuple containing the lower and upper bounds of the eigenvalues.
         :return: (list) list containing the tuple of bounds for the eigenvalues.
         """
-        return [(np.pi + np.pi * N_, 2 * np.pi + np.pi * N_) for N_ in range(self.N)]
+        return [(np.pi * (1 + k), np.pi * (2 + k)) for k in range(self.N)]  # k refers to the kth term of the series
 
     @property
     def lambda_roots(self):
@@ -77,7 +77,8 @@ class EigenFuncExp:
         :return: (list) list containing the eigenvalues for all solution terms.
         """
         bounds = self.lambda_bounds()
-        return [bisect(self.lambda_func, bounds[N_][0], bounds[N_][1]) for N_ in range(self.N)]
+        return [bisect(self.lambda_func, bounds[k][0], bounds[k][1]) for k in range(self.N)]  # k refers to the kth
+        # term of the series
 
     def j_scaled(self, i_app, R, S, D_s, c_smax):
         """

@@ -4,48 +4,45 @@ from SPPy.calc_helpers.constants import Constants
 
 
 class SPModel:
-    def __init__(self, isothermal= False, degradation=False):
-        # Check for incorrect input argument types.
-        if not isinstance(isothermal, bool):
-            raise TypeError("isothermal argument needs to be a bool type.")
-        if not isinstance(degradation, bool):
-            raise TypeError("degradation argument needs to be a bool type.")
-        # Assign class attributes.
-        self.isothermal = isothermal
-        self.SEI_growth = degradation
+    """
+    This class contains the methods for calculating the cell terminal voltage according to the single particle model.
+    """
 
     @staticmethod
-    def SOC(c, c_max):
-        return c/c_max
+    def m(I, k, S, c_max, SOC, c_e):
+        return I / (Constants.F * k * S * c_max * (c_e ** 0.5) * ((1 - SOC) ** 0.5) * (SOC ** 0.5))
 
     @staticmethod
-    def j(I, S, electrode_type):
-        if electrode_type == 'p':
-            return I/(Constants.F * S)
-        elif electrode_type == 'n':
-            return -I/(Constants.F * S)
-        else:
-            raise ValueError("Invalid Electrode Type")
-
-    @staticmethod
-    def scaled_j(I, S, R, D, c_max, electrode_type):
-        return SPModel.j(I=I, S=S, electrode_type=electrode_type) * R / (D * c_max)
-
-    def m(self, I, k, S, c_max, SOC, c_e):
-        return I/(Constants.F * k * S * c_max * (c_e ** 0.5) * ((1 - SOC) ** 0.5) * (SOC ** 0.5))
-
-    @staticmethod
-    def calc_term_V(p_OCP, n_OCP, m_p, m_n, R_cell, T, I):
-        V = p_OCP - n_OCP
+    def calc_cell_terminal_voltage(OCP_p, OCP_n, m_p, m_n, R_cell, T, I):
+        V = OCP_p - OCP_n
         V += (2 * Constants.R * T / Constants.F) * np.log((np.sqrt(m_p ** 2 + 4) + m_p) / 2)
         V += (2 * Constants.R * T / Constants.F) * np.log((np.sqrt(m_n ** 2 + 4) + m_n) / 2)
         V += I * R_cell
         return V
 
-    @staticmethod
-    def delta_cap(Q, I, dt):
-        return (1/3600) * (np.abs(I) * dt / Q)
-
-    @staticmethod
-    def calc_cap(cap_prev, Q, I, dt):
-        return cap_prev + SPModel.delta_cap(Q=Q, I=I, dt=dt)
+    def __call__(self, OCP_p, OCP_n, R_cell,
+                 k_p, S_p, c_smax_p, SOC_p,
+                 k_n, S_n, c_smax_n, SOC_n,
+                 c_e,
+                 T, I):
+        """
+        Calculates the cell terminal voltage.
+        :param OCP_p: Open-circuit potential of the positive electrode [V]
+        :param OCP_n: Open-circuit potential of the negative electrode [V]
+        :param R_cell: Battery cell ohmic resistance [ohms]
+        :param k_p: positive electrode rate constant [m2 mol0.5 / s]
+        :param S_p:  positive electrode electroactive area [mol/m2]
+        :param c_smax_p: positive electrode max. lithium conc. [mol]
+        :param SOC_p: positive electrode SOC
+        :param k_n: negative electrode rate constant [m2 mol0.5 / s]
+        :param S_n: negative electrode electrochemical active area [m2/mol]
+        :param c_smax_n: negative electrode max. lithium conc. [mol]
+        :param SOC_n: negative electrode SOC
+        :param c_e: electrolyte conc. [mol]
+        :param T: Battery cell temperature [K]
+        :param I: applied current [A]
+        :return: Battery cell terminal voltage [V]
+        """
+        m_p = self.m(I=I, k=k_p, S=S_p, c_max=c_smax_p, SOC=SOC_p, c_e=c_e)
+        m_n = self.m(I=I, k=k_n, S=S_n, c_max=c_smax_n, SOC=SOC_n, c_e=c_e)
+        return self.calc_cell_terminal_voltage(OCP_p=OCP_p, OCP_n=OCP_n, m_p=m_p, m_n=m_n, R_cell=R_cell, T=T, I=I)

@@ -3,6 +3,9 @@ from SPPy.solvers.electrode_surf_conc import EigenFuncExp
 
 
 class TestEigenFuncForPositiveElectrode(unittest.TestCase):
+    """
+    Tests for the functionality and accuracy of the computed variables in the Eigen Expansion Method.
+    """
     i_app = -1.656
     r = 8.5e-6
     s = 1.1167

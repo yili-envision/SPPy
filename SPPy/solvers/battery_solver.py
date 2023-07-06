@@ -16,50 +16,85 @@ from SPPy.cycler.discharge import CustomDischarge
 class SPPySolver(BaseSolver):
     """
     This class contains the attributes and methods to solve for the cell terminal voltage, battery cell temperature,
-    and SEI degradation during battery cycling. The cell terminal voltage is solved using the single particle (SP) model.
-    It uses the Eigen Expansion Function method to solve for the electrode surface SOC.
+    and SEI degradation during battery cycling.
+    The cell terminal voltage is solved using the single particle (SP) model. It uses the Eigen Expansion Function
+    method to solve for the electrode surface SOC.
+    The cell surface temperature is solved using the lumped cell thermal balance. The heat balance ODE is solved using
+    the rk4 method.
     """
-    def __init__(self, b_cell, b_model, N, **SEI_model):
-        super().__init__(b_cell, b_model, **SEI_model)
+
+    def __init__(self, b_cell, isothermal: bool = True, degradation: bool = False, N: int = 5, **SEI_model):
+        super().__init__(b_cell, **SEI_model)
         self.N = N
+        # Check for incorrect input argument types.
+        if not isinstance(isothermal, bool):
+            raise TypeError("isothermal argument needs to be a bool type.")
+        if not isinstance(degradation, bool):
+            raise TypeError("degradation argument needs to be a bool type.")
+        # Assign class attributes.
+        self.bool_isothermal = isothermal
+        self.bool_degradation = degradation
 
     def calc_terminal_potential(self, I):
-        m_p = self.b_model.m(I=I, k=self.b_cell.elec_p.k, S=self.b_cell.elec_p.S, c_e=self.b_cell.electrolyte.conc,
-                             c_max=self.b_cell.elec_p.max_conc, SOC=self.b_cell.elec_p.SOC)
-        m_n = self.b_model.m(I=I, k=self.b_cell.elec_n.k, S=self.b_cell.elec_n.S, c_e=self.b_cell.electrolyte.conc,
-                             c_max=self.b_cell.elec_n.max_conc, SOC=self.b_cell.elec_n.SOC)
-        V = self.b_model.calc_term_V(p_OCP=self.b_cell.elec_p.OCP,
-                                     n_OCP=self.b_cell.elec_n.OCP,
-                                     m_p=m_p, m_n=m_n, R_cell=self.b_cell.R_cell,
-                                     T=self.b_cell.T, I=I)
-        return V
+        return self.b_model(OCP_p=self.b_cell.elec_p.OCP, OCP_n=self.b_cell.elec_n.OCP, R_cell=self.b_cell.R_cell,
+                            k_p=self.b_cell.elec_p.k, S_p=self.b_cell.elec_p.S, c_smax_p=self.b_cell.elec_p.max_conc,
+                            SOC_p=self.b_cell.elec_p.SOC,
+                            k_n=self.b_cell.elec_n.k, S_n=self.b_cell.elec_n.S, c_smax_n=self.b_cell.elec_n.max_conc,
+                            SOC_n=self.b_cell.elec_n.SOC,
+                            c_e=self.b_cell.electrolyte.conc, T=self.b_cell.T, I=I)
+
+    @staticmethod
+    def calc_cell_temp(t_model, t_prev, dt, temp_prev, V, I):
+        """
+        Solves for the heat balance using the ODE rk4 solver.
+        :param t_model: Thermal model class
+        :param t_prev: time values at the previous time step [s]
+        :param dt: time difference between the current and previous times [s]
+        :param V: cell terminal voltage [V]
+        :param temp_prev: previous cell temperature [K]
+        :param I: applied current [A]
+        :return: cell temperature values [K]
+        """
+        if not isinstance(t_model, Lumped):
+            raise TypeError("t_model needs to be a Thermal Model")
+        func_heat_balance = t_model.heat_balance(V=V, I=I)
+        return ode_solvers.rk4(func=func_heat_balance, t_prev=t_prev, y_prev=temp_prev, step_size=dt)
+
+
+    @staticmethod
+    def delta_cap(Q, I, dt):
+        return (1 / 3600) * (np.abs(I) * dt / Q)
+
+    def calc_cap(self, cap_prev, Q, I, dt):
+        return cap_prev + self.delta_cap(Q=Q, I=I, dt=dt)
 
     @timer
-    def solve(self, cycler, sol_name = None, save_csv_dir=None, verbose=False, t_increment=0.1,
+    def solve(self, cycler, sol_name=None, save_csv_dir=None, verbose=False, t_increment=0.1,
               termination_criteria='V', adaptive_step=False):
 
-        # check for input parameter types
+        # check for input parameter types below.
         if not isinstance(cycler, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
 
-        # initialize result storage lists
+        # initialize result storage lists below.
         x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
         battery_cap_list = []
         t_list, I_list, T_list, R_cell_list, js_list = [], [], [], [], []
         cycle_list, step_name_list = [], []  # cycler specific information
 
-        # initialize calculation parameters
+        # initialize electrode surface SOC and temperature solvers instances below.
         SOC_solver_p = EigenFuncExp(x_init=self.b_cell.elec_p.SOC, n=self.N, electrode_type='p')
         SOC_solver_n = EigenFuncExp(x_init=self.b_cell.elec_n.SOC, n=self.N, electrode_type='n')
 
-        t_model = Lumped(b_cell=self.b_cell) # thermal model object
+        t_model = Lumped(b_cell=self.b_cell)  # thermal model object
 
+        # cycling simulation below
         for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
                 cap_charge = 0
                 cap_discharge = 0
-                t_prev =0
+                t_prev = 0
                 step_completed = False
                 while not step_completed:
                     if isinstance(cycler, CustomDischarge):
@@ -98,25 +133,24 @@ class SPPySolver(BaseSolver):
                         print(e)
                         break
 
-                    V = self.calc_terminal_potential(I=I) # calc battery cell terminal voltage
+                    V = self.calc_terminal_potential(I=I)  # calc battery cell terminal voltage
                     if V < self.b_cell.V_min:
                         threshold_potential_warning(V=V)
                         break
 
                     # Calc temp and update T_list if not isothermal
-                    if not self.b_model.isothermal:
-                        func_T = t_model.heat_balance(V=V, I=I)
-                        self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T,
-                                                        step_size=dt)
+                    if not self.bool_isothermal:
+                        self.b_cell.T = self.calc_cell_temp(t_model=t_model, t_prev=t_prev, dt=dt,
+                                                            temp_prev=self.b_cell.T, V=V, I=I)
 
-                    # Calc charge, discharge, LIB capacity
-                    cap = self.b_model.calc_cap(cap_prev=cap, Q=self.b_cell.cap ,I=I, dt=dt)
-                    delta_cap = self.b_model.delta_cap(Q=self.b_cell.cap,I=I, dt=dt)
+                    # Calc charge capacity, discharge capacity, and overall LIB capacity
+                    cap = self.calc_cap(cap_prev=cap, Q=self.b_cell.cap, I=I, dt=dt)
+                    delta_cap = self.delta_cap(Q=self.b_cell.cap, I=I, dt=dt)
                     if step == "charge":
-                        cap_charge = self.b_model.calc_cap(cap_prev=cap_charge, Q=self.b_cell.cap, I=I, dt=dt)
+                        cap_charge = self.calc_cap(cap_prev=cap_charge, Q=self.b_cell.cap, I=I, dt=dt)
                         cycler.SOC_LIB += delta_cap
                     elif step == "discharge":
-                        cap_discharge = self.b_model.calc_cap(cap_prev=cap_discharge, Q=self.b_cell.cap, I=I, dt=dt)
+                        cap_discharge = self.calc_cap(cap_prev=cap_discharge, Q=self.b_cell.cap, I=I, dt=dt)
                         cycler.SOC_LIB -= delta_cap
 
                     # break condition for charge and discharge if stop criteria is V-based
@@ -136,7 +170,7 @@ class SPPySolver(BaseSolver):
                         if step == "discharge" and cycler.time_elapsed > cycler.t_max:
                             step_completed = True
 
-                    #update time
+                    # update time
                     t_prev = t_curr
                     cycler.time_elapsed += t_increment
 
@@ -154,14 +188,15 @@ class SPPySolver(BaseSolver):
                     cap_discharge_list.append(cap_discharge)
                     R_cell_list.append(self.b_cell.R_cell)
                     battery_cap_list.append(self.b_cell.cap)
-                    if self.b_model.SEI_growth:
+                    if self.bool_degradation:
                         js_list.append(self.SEI_model.j_s_prev)
                     else:
                         js_list.append(0)
 
                     if verbose:
                         print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no,
-                              'step: ', step, "current [A]", I,", terminal voltage [V]: ", V, ", SOC_LIB: ", cycler.SOC_LIB,
+                              'step: ', step, "current [A]", I, ", terminal voltage [V]: ", V, ", SOC_LIB: ",
+                              cycler.SOC_LIB,
                               "cap: ", cap)
 
         return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
@@ -169,7 +204,7 @@ class SPPySolver(BaseSolver):
                         cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
                         battery_cap=battery_cap_list,
                         T=T_list, R_cell=R_cell_list, js=js_list,
-                        name= sol_name, save_csv_dir=save_csv_dir)
+                        name=sol_name, save_csv_dir=save_csv_dir)
 
     def simple_solve(self, cycler: CustomDischarge, verbose: bool = False):
 
@@ -184,24 +219,24 @@ class SPPySolver(BaseSolver):
         cycle_list, step_name_list = [], []  # cycler specific information
 
         # initialize calculation parameters
-        integ_term_p, integ_term_n = 0, 0 # integration terms
+        integ_term_p, integ_term_n = 0, 0  # integration terms
         u_k_p, u_k_n = np.zeros(self.N), np.zeros(self.N)
-        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC # initial surface SOC of electrodes
+        x_p_init, x_n_init = self.b_cell.elec_p.SOC, self.b_cell.elec_n.SOC  # initial surface SOC of electrodes
 
-        t_model = Lumped(b_cell=self.b_cell) # thermal model object
+        t_model = Lumped(b_cell=self.b_cell)  # thermal model object
 
         cap = 0
         cap_charge = 0
         cap_discharge = 0
-        t_prev =0
+        t_prev = 0
         step_completed = False
-        for k in range(len(cycler.t_array)-1):
+        for k in range(len(cycler.t_array) - 1):
             t_curr = cycler.t_array[k]
-            dt = cycler.t_array[k+1] - cycler.t_array[k]
+            dt = cycler.t_array[k + 1] - cycler.t_array[k]
             I = cycler.I_array[k]
 
             # Calc total electrode surface flux
-            scaled_j_p = self.scaled_j(I=I, R= self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
+            scaled_j_p = self.scaled_j(I=I, R=self.b_cell.elec_p.R, S=self.b_cell.elec_p.S, D=self.b_cell.elec_p.D,
                                        c_s_max=self.b_cell.elec_p.max_conc, electrode_type='p')
             scaled_j_n = self.scaled_j(I=I, R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S, D=self.b_cell.elec_n.D,
                                        c_s_max=self.b_cell.elec_n.max_conc, electrode_type='n')
@@ -220,12 +255,12 @@ class SPPySolver(BaseSolver):
                 u_k_p, u_k_n, sum_term_p, sum_term_n, integ_term_p, integ_term_n = \
                     self.calc_SOC_surf(scaled_j_p=scaled_j_p, scaled_j_n=scaled_j_n, u_k_p=u_k_p, u_k_n=u_k_n,
                                        integ_term_p=integ_term_p, integ_term_n=integ_term_n, x_p_init=x_p_init,
-                                       x_n_init=x_n_init, dt=dt, t_prev=t_prev) # Calc the surface SOC
+                                       x_n_init=x_n_init, dt=dt, t_prev=t_prev)  # Calc the surface SOC
             except InvalidSOCException as e:
                 print(e)
                 break
 
-            V = self.calc_terminal_potential(I=I) # calc battery cell terminal voltage
+            V = self.calc_terminal_potential(I=I)  # calc battery cell terminal voltage
             if V < self.b_cell.V_min:
                 threshold_potential_warning(V=V)
                 break
@@ -236,7 +271,7 @@ class SPPySolver(BaseSolver):
                 self.b_cell.T = ode_solvers.rk4(func=func_T, t_prev=t_prev, y_prev=self.b_cell.T,
                                                 step_size=dt)
 
-            #update time
+            # update time
             t_prev = t_curr
             cycler.time_elapsed = cycler.t_array[k]
 
@@ -258,7 +293,7 @@ class SPPySolver(BaseSolver):
                 js_list.append(0)
 
             if verbose:
-                print("time elapsed [s]: ", cycler.time_elapsed, "current [A]", I,", terminal voltage [V]: ",
+                print("time elapsed [s]: ", cycler.time_elapsed, "current [A]", I, ", terminal voltage [V]: ",
                       V, ", SOC_LIB: ", cycler.SOC_LIB, "cap: ", cap)
 
         return V_list
