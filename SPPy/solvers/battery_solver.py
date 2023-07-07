@@ -70,7 +70,7 @@ class SPPySolver(BaseSolver):
 
     @timer
     def solve(self, cycler, sol_name=None, save_csv_dir=None, verbose=False, t_increment=0.1,
-              termination_criteria='V', adaptive_step=False):
+              termination_criteria='V'):
 
         # check for input parameter types below.
         if not isinstance(cycler, BaseCycler):
@@ -88,7 +88,9 @@ class SPPySolver(BaseSolver):
 
         t_model = Lumped(b_cell=self.b_cell)  # thermal model object
 
-        # cycling simulation below
+        # cycling simulation below. The first two loops iterate over the cycle numbers and cycling steps,
+        # respectively. The following while loops checks for termination conditions and breaks when it reaches it.
+        # The termination criteria are specified within the cycler instance.
         for cycle_no in tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 cap = 0
@@ -123,12 +125,12 @@ class SPPySolver(BaseSolver):
                                                               R=self.b_cell.elec_p.R,
                                                               S=self.b_cell.elec_p.S,
                                                               D_s=self.b_cell.elec_p.D,
-                                                              c_smax=self.b_cell.elec_p.max_conc)
+                                                              c_smax=self.b_cell.elec_p.max_conc)  # calc p surf SOC
                         self.b_cell.elec_n.SOC = SOC_solver_n(dt=dt, t_prev=t_prev, i_app=I,
                                                               R=self.b_cell.elec_n.R,
                                                               S=self.b_cell.elec_n.S,
                                                               D_s=self.b_cell.elec_n.D,
-                                                              c_smax=self.b_cell.elec_n.max_conc)
+                                                              c_smax=self.b_cell.elec_n.max_conc)  # calc n surf SOC
                     except InvalidSOCException as e:
                         print(e)
                         break
