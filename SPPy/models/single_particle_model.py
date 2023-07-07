@@ -1,12 +1,45 @@
 import numpy as np
 
 from SPPy.calc_helpers.constants import Constants
+from SPPy.warnings_and_exceptions.custom_exceptions import InvalidElectrodeType
 
 
 class SPModel:
     """
-    This class contains the methods for calculating the cell terminal voltage according to the single particle model.
+    This class contains the methods for calculating the molar lithium flux, cell terminal voltage according to the
+    single particle model.
     """
+    @staticmethod
+    def molar_flux_electrode(I: float, S: float, electrode_type: str):
+        """
+        Calculates the model lithium-ion flux [mol/m2/s] into the electrodes.
+        :param I: (float) Applied current [A]
+        :param S: (float) electrode electrochemically active area [m2]
+        :param electrode_type: (str) positive electrode ('p') or negative electrode ('n')
+        :return: (float) molar flux [mol/m2/s]
+        """
+        if electrode_type == 'p':
+            return I / (Constants.F * S)
+        elif electrode_type == 'n':
+            return -I / (Constants.F * S)
+        else:
+            raise InvalidElectrodeType
+
+    @staticmethod
+    def flux_to_current(molar_flux: float, S: float, electrode_type: str):
+        """
+        Converts molar flux [mol/m2/s] to current [A].
+        :param molar_flux: molar lithium-ion flux [mol/m2/s]
+        :param S: (float) electrode electrochemically active area [m2]
+        :param electrode_type: (str) positive electrode ('p') or negative electrode ('n')
+        :return: current [A]
+        """
+        if electrode_type == 'p':
+            return molar_flux * Constants.F * S
+        elif electrode_type == 'n':
+            return -molar_flux * Constants.F * S
+        else:
+            raise InvalidElectrodeType
 
     @staticmethod
     def m(I, k, S, c_max, SOC, c_e):

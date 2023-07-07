@@ -1,8 +1,6 @@
 from SPPy.battery_components.battery_cell import BatteryCell
 from SPPy.models.single_particle_model import SPModel
 from SPPy.warnings_and_exceptions.custom_exceptions import *
-from SPPy.warnings_and_exceptions.custom_warnings import *
-from SPPy.models.degradation import ROM_SEI
 import time
 
 
@@ -15,18 +13,6 @@ class BaseSolver:
             self.b_cell = b_cell
 
         self.b_model = SPModel()  # initializes the single particle model instance.
-        # if self.b_model.SEI_growth:
-        #     present = False
-        #     for kwargs_ in SEI_model.keys():
-        #         if kwargs_ == 'SEI_model':
-        #             present = True
-        #             break
-        #     if present == False:
-        #         raise ValueError("Need to provide SEI_model.")
-        #     if not isinstance(SEI_model['SEI_model'], ROM_SEI):
-        #         raise TypeError('SEI_model needs to be of ROM_SEI type.')
-        #     else:
-        #         self.SEI_model = SEI_model['SEI_model']
 
     def check_potential_limits(self, V):
         if V < self.b_cell.V_min:

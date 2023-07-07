@@ -33,6 +33,13 @@ class TestNElectrode(unittest.TestCase):
         self.assertEqual(n_elec.SOC, SOC_init)
         self.assertEqual(n_elec.electrode_type, 'n')
 
+        # Test for SEI related attributes
+        self.assertEqual(0.4, n_elec.U_s)
+        self.assertEqual(1.5e-6, n_elec.i_s)
+        self.assertEqual(0.16, n_elec.MW_SEI)
+        self.assertEqual(1600, n_elec.rho_SEI)
+        self.assertEqual(5e-6, n_elec.kappa_SEI)
+
     def test_OCP_values(self):
         """
         This test method ensures that the OCP are calculated correctly from the inputted OCP values.

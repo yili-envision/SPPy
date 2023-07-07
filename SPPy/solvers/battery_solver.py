@@ -5,10 +5,14 @@ from SPPy.solvers.base import BaseSolver, timer
 from SPPy.calc_helpers.constants import Constants
 from SPPy.calc_helpers import ode_solvers
 from SPPy.solution import Solution
+
 from SPPy.warnings_and_exceptions.custom_warnings import *
 from SPPy.warnings_and_exceptions.custom_exceptions import *
+
 from SPPy.solvers.electrode_surf_conc import EigenFuncExp
 from SPPy.models.thermal import Lumped
+from SPPy.solvers.degradation_solvers import ROMSEISolver
+
 from SPPy.cycler.base import BaseCycler
 from SPPy.cycler.discharge import CustomDischarge
 
@@ -60,7 +64,6 @@ class SPPySolver(BaseSolver):
         func_heat_balance = t_model.heat_balance(V=V, I=I)
         return ode_solvers.rk4(func=func_heat_balance, t_prev=t_prev, y_prev=temp_prev, step_size=dt)
 
-
     @staticmethod
     def delta_cap(Q, I, dt):
         return (1 / 3600) * (np.abs(I) * dt / Q)
@@ -82,11 +85,13 @@ class SPPySolver(BaseSolver):
         t_list, I_list, T_list, R_cell_list, js_list = [], [], [], [], []
         cycle_list, step_name_list = [], []  # cycler specific information
 
-        # initialize electrode surface SOC and temperature solvers instances below.
+        # initialize electrode surface SOC, temperature solvers, and degradation instances below.
         SOC_solver_p = EigenFuncExp(x_init=self.b_cell.elec_p.SOC, n=self.N, electrode_type='p')
         SOC_solver_n = EigenFuncExp(x_init=self.b_cell.elec_n.SOC, n=self.N, electrode_type='n')
 
         t_model = Lumped(b_cell=self.b_cell)  # thermal model object
+
+        SEI_model = ROMSEISolver(b_cell=self.b_cell)  # ROM SEI solver object
 
         # cycling simulation below. The first two loops iterate over the cycle numbers and cycling steps,
         # respectively. The following while loops checks for termination conditions and breaks when it reaches it.
@@ -110,15 +115,13 @@ class SPPySolver(BaseSolver):
                     if ((step == "rest") and (t_curr > cycler.rest_time)):
                         step_completed = True
 
-                    # # Account for SEI growth
-                    # if self.b_model.SEI_growth:
-                    #     self.SEI_model.solve(I=I, dt=dt)
-                    #     # self.b_cell.R_cell += self.SEI_model.resistance
-                    #     self.b_cell.R_cell += self.SEI_model.delta_resistance(js_prev=self.SEI_model.j_s_prev, dt=dt)
-                    #     self.b_cell.cap += self.SEI_model.delta_cap(self.b_cell.elec_n.S)
-                    #     print(self.b_cell.cap)
-                    #     scaled_j_n -= self.SEI_model.j_s_prev / Constants.F
-                    # # R_cell_list.append(self.b_cell.R_cell)
+                    # Account for SEI growth
+                    if self.bool_degradation:
+                        I, I_s, delta_R_SEI = SEI_model(SOC_n=self.b_cell.elec_n.SOC, OCP_n=self.b_cell.elec_n.OCP,
+                                                        dt=dt,
+                                                        temp=self.b_cell.elec_n.T,
+                                                        I=I)  # update the intercalation current
+                        # self.b_cell.R_cell += delta_R_SEI  # update the cell resistance
 
                     try:
                         self.b_cell.elec_p.SOC = SOC_solver_p(dt=dt, t_prev=t_prev, i_app=I,
@@ -191,7 +194,7 @@ class SPPySolver(BaseSolver):
                     R_cell_list.append(self.b_cell.R_cell)
                     battery_cap_list.append(self.b_cell.cap)
                     if self.bool_degradation:
-                        js_list.append(self.SEI_model.j_s_prev)
+                        js_list.append(SEI_model.J_s)
                     else:
                         js_list.append(0)
 

@@ -158,3 +158,12 @@ class NElectrode(Electrode):
     def __init__(self, file_path, SOC_init, T, func_OCP, func_dOCPdT=None):
         super().__init__(file_path=file_path, SOC_init=SOC_init, T=T, func_OCP=func_OCP, func_dOCPdT=func_dOCPdT)
         self.electrode_type = 'n'
+
+        # Add SEI parameters
+        df = self.parse_csv(file_path=file_path)
+        self.U_s = df['SEI Reference Overpotential [V]']
+        self.i_s = df['SEI Exchange Current Density [A m^-1]']
+        self.MW_SEI = df['SEI Molar Weight [kg mol^-1]']
+        self.rho_SEI = df['SEI Density [kg m^-3]']
+        self.kappa_SEI = df['SEI Conductivity [S m^-1]']  # SEI conductivity [S/m]
+
