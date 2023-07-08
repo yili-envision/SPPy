@@ -4,29 +4,62 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 from SPPy.calc_helpers.constants import Constants
+from dataclasses import dataclass, field
+
+
+@ dataclass
+class SolutionInitializer:
+    """
+    Initializes the relevant data to be stored during a simulation by creating empty lists. Furthermore, it is intended
+    to append these lists during simulations.
+    """
+    lst_cycle_num: list = field(default_factory=lambda: [])  # cycle number
+    lst_cycle_step: list = field(default_factory=lambda: [])  # cycle step name
+    lst_t: list = field(default_factory=lambda: [])  # time [s]
+    lst_I: list = field(default_factory=lambda: [])  # applied current [A]
+    lst_V: list = field(default_factory=lambda: [])  # cell terminal voltage [V]
+    lst_x_surf_p: list = field(default_factory=lambda: [])  # positive electrode surface SOC
+    lst_x_surf_n: list = field(default_factory=lambda: [])  # negative electrode surface SOC
+    lst_cap: list = field(default_factory=lambda: [])   # total capacity over cycling [Ahr]
+    lst_cap_charge: list = field(default_factory=lambda: [])  # charge capacity [A hr]
+    lst_cap_discharge: list = field(default_factory=lambda: [])  # discharge capacity [A hr]
+    lst_battery_cap: list = field(default_factory=lambda: [])  # battery cell capacity [A hr]
+    lst_temp: list = field(default_factory=lambda: [])  # battery cell temperature [K]
+    lst_R_cell: list = field(default_factory=lambda: [])  # battery cell internal resistance [ohms]
+
+    # attributes below relates to the molar fluxes of the negative electrode.
+    lst_j_tot: list = field(default_factory=lambda: [])  # total molar flux at the negative electrode [mol/m2/s]
+    lst_j_i: list = field(default_factory=lambda: [])  # total intercalation flux at the negative electrode [mol/m2/s]
+    lst_j_s: list = field(default_factory=lambda: [])  # side reaction molar flux at the negative electrode [mol/m2/s]
 
 
 class Solution:
-    def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge,
-                 battery_cap, T, R_cell, j_tot, j_i, js, name=None, save_csv_dir=None):
-        self.cycle_num = np.array(cycle_num)
-        self.cycle_step = np.array(cycle_step)
-        self.t = np.array(t[:len(V)])
-        self.I = np.array(I[:len(V)])
-        self.V = np.array(V)
-        self.x_surf_p = np.array(x_surf_p)
-        self.x_surf_n = np.array(x_surf_n)
-        self.cap = np.array(cap)
-        self.cap_charge = cap_charge
-        self.cap_discharge = cap_discharge
-        self.battery_cap = battery_cap
-        self.T = np.array(T)
-        self.R_cell = np.array(R_cell)
-        self.name = name
+    def __init__(self, base_solution_instance: SolutionInitializer, name=None, save_csv_dir=None):
+        if not isinstance(base_solution_instance, SolutionInitializer):
+            raise TypeError("base_solution_instance needs to be a SolutionInitializer object.")
+
+        # below preprocesses the attributes from the BaseSolution instance.
+        self.cycle_num = np.array(base_solution_instance.lst_cycle_num)
+        self.cycle_step = np.array(base_solution_instance.lst_cycle_step)
+        self.t = np.array(base_solution_instance.lst_t[:len(base_solution_instance.lst_V)])
+        self.I = np.array(base_solution_instance.lst_I[:len(base_solution_instance.lst_V)])
+        self.V = np.array(base_solution_instance.lst_V)
+        self.x_surf_p = np.array(base_solution_instance.lst_x_surf_p)
+        self.x_surf_n = np.array(base_solution_instance.lst_x_surf_n)
+        self.cap = np.array(base_solution_instance.lst_cap)
+        self.cap_charge = base_solution_instance.lst_cap_charge
+        self.cap_discharge = base_solution_instance.lst_cap_discharge
+        self.battery_cap = base_solution_instance.lst_battery_cap
+        self.T = np.array(base_solution_instance.lst_temp)
+        self.R_cell = np.array(base_solution_instance.lst_R_cell)
+        self.j_tot = np.array(base_solution_instance.lst_j_tot)
+        self.j_i = np.array(base_solution_instance.lst_j_i)
+        self.js = np.array(base_solution_instance.lst_j_s)
+
+        self.name = name  # name of the solution
+
         self.total_cycles = len(np.unique(self.cycle_num))
-        self.j_tot = np.array(j_tot)
-        self.j_i = np.array(j_i)
-        self.js = np.array(js)
+
         if save_csv_dir is not None:
             self.save_csv_func(save_csv_dir)
 
@@ -251,9 +284,9 @@ class Solution:
 
         color = 'tab:red'
         ax3 = ax2.twinx()
-        ax3.plot(self.x_surf_n, self.j_tot, color=color)
+        ax3.plot(self.x_surf_n, self.j_i, color=color)
         ax3.tick_params(axis='y', labelcolor=color)
-        ax3.set_ylabel('total flux [mol/m2/s]')
+        ax3.set_ylabel('intercalation flux [mol/m2/s]')
 
         plt.tight_layout()
         plt.show()

@@ -14,7 +14,7 @@ SOC_min = 0.1
 SOC_LIB = 0.9
 
 # Modelling parameters
-SOC_init_p, SOC_init_n = 0.989011, 0.01890232  # conditions in the literature source. Guo et al
+SOC_init_p, SOC_init_n = 0.989011, 0.01890232  # conditions in the literature source. Guo et al.
 
 # Setup battery components
 cell1 = SPPy.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,
@@ -30,4 +30,4 @@ solver1 = SPPy.SPPySolver(b_cell= cell1, N=5, isothermal=True, degradation=True)
 sol1 = solver1.solve(cycler=cc)
 
 # Plot
-sol1.plot_degradation()
+sol1.plot_SEI()

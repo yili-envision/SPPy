@@ -4,7 +4,7 @@ from tqdm import tqdm
 from SPPy.solvers.base import BaseSolver, timer
 from SPPy.calc_helpers.constants import Constants
 from SPPy.calc_helpers import ode_solvers
-from SPPy.solution import Solution
+from SPPy.solution import SolutionInitializer, Solution
 
 from SPPy.warnings_and_exceptions.custom_warnings import *
 from SPPy.warnings_and_exceptions.custom_exceptions import *
@@ -80,11 +80,7 @@ class SPPySolver(BaseSolver):
             raise TypeError("cycler needs to be a Cycler object.")
 
         # initialize result storage lists below.
-        x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
-        battery_cap_list = []
-        t_list, I_list, T_list, R_cell_list  = [], [], [], []
-        lst_j_tot, lst_j_i, js_list = [], [], []
-        cycle_list, step_name_list = [], []  # cycler specific information
+        sol_init = SolutionInitializer()  # initializes the empty lists that will store the simulation results
 
         # initialize electrode surface SOC, temperature solvers, and degradation instances below.
         SOC_solver_p = EigenFuncExp(x_init=self.b_cell.elec_p.SOC, n=self.N, electrode_type='p')
@@ -181,27 +177,27 @@ class SPPySolver(BaseSolver):
                     cycler.time_elapsed += t_increment
 
                     # Update results lists
-                    t_list.append(cycler.time_elapsed)
-                    cycle_list.append(cycle_no)
-                    step_name_list.append(step)
-                    I_list.append(I)
-                    x_p_list.append(self.b_cell.elec_p.SOC)
-                    x_n_list.append(self.b_cell.elec_n.SOC)
-                    V_list.append(V)
-                    T_list.append(self.b_cell.T)
-                    cap_list.append(cap)
-                    cap_charge_list.append(cap_charge)
-                    cap_discharge_list.append(cap_discharge)
-                    R_cell_list.append(self.b_cell.R_cell)
-                    battery_cap_list.append(self.b_cell.cap)
+                    sol_init.lst_t.append(cycler.time_elapsed)
+                    sol_init.lst_cycle_num.append(cycle_no)
+                    sol_init.lst_cycle_step.append(step)
+                    sol_init.lst_I.append(I)
+                    sol_init.lst_x_surf_p.append(self.b_cell.elec_p.SOC)
+                    sol_init.lst_x_surf_n.append(self.b_cell.elec_n.SOC)
+                    sol_init.lst_V.append(V)
+                    sol_init.lst_temp.append(self.b_cell.T)
+                    sol_init.lst_cap.append(cap)
+                    sol_init.lst_cap_charge.append(cap_charge)
+                    sol_init.lst_cap_discharge.append(cap_discharge)
+                    sol_init.lst_R_cell.append(self.b_cell.R_cell)
+                    sol_init.lst_battery_cap.append(self.b_cell.cap)
                     if self.bool_degradation:
-                        lst_j_tot.append(SEI_model.J_tot)
-                        lst_j_i.append(SEI_model.J_i)
-                        js_list.append(SEI_model.J_s)
+                        sol_init.lst_j_tot.append(SEI_model.J_tot)
+                        sol_init.lst_j_i.append(SEI_model.J_i)
+                        sol_init.lst_j_s.append(SEI_model.J_s)
                     else:
-                        lst_j_tot.append(0.0)
-                        lst_j_i.append(0.0)
-                        js_list.append(0.0)
+                        sol_init.lst_j_tot.append(0.0)
+                        sol_init.lst_j_i.append(0.0)
+                        sol_init.lst_j_s.append(0.0)
 
                     if verbose:
                         print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no,
@@ -209,12 +205,7 @@ class SPPySolver(BaseSolver):
                               cycler.SOC_LIB,
                               "cap: ", cap)
 
-        return Solution(cycle_num=cycle_list, cycle_step=step_name_list, t=t_list, I=I_list, V=V_list,
-                        x_surf_p=x_p_list, x_surf_n=x_n_list,
-                        cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
-                        battery_cap=battery_cap_list,
-                        T=T_list, R_cell=R_cell_list, j_tot=lst_j_tot, j_i=lst_j_i, js=js_list,
-                        name=sol_name, save_csv_dir=save_csv_dir)
+        return Solution(base_solution_instance=sol_init, name=sol_name, save_csv_dir=save_csv_dir)
 
     def simple_solve(self, cycler: CustomDischarge, verbose: bool = False):
 

@@ -5,9 +5,6 @@ from dataclasses import dataclass, field
 class BaseCycler:
     time_elapsed: float = field(default=0.0) # time elapsed during cycling
     SOC_LIB: float = field(default=0.0) # battery cell SOC
-    # def __init__(self):
-    #     self.time_elapsed = 0.0
-    #     self.SOC_LIB = 0.0
 
     def get_current(self, step_name):
         """
