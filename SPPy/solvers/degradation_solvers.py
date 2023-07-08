@@ -21,6 +21,8 @@ class ROMSEISolver(ROMSEI):
         self.kappa = b_cell.elec_n.kappa_SEI  # SEI conductivity [S/m]
 
         self.L = thickness_SEI_init  # initial SEI thickness [m]
+        self.J_tot = 0  # total lithium-ion flux [mol/m2/s], initialized to zero
+        self.J_i = 0  # intercalation lithium-ion flux [mol/m2/s] initialized to zero
         self.J_s = 0  # SEI side reaction flux [mol/m2/s], initialized to zero
 
     def solve_current(self, SOC_n: float, OCP_n: float, temp: float, I: float, rel_tol: float = 1e-6,
@@ -34,26 +36,30 @@ class ROMSEISolver(ROMSEI):
         :param iter_no:
         :return: tuple containing the intercalation current [A] and side-reaction current [A]
         """
-        J_s = 0
-        J_tot = self.calc_j_tot(I=I, S=self.S_n)
-        c_n = self.calc_c_n(k_n=self.k_n, c_nmax=self.c_nmax, c_e=self.c_e, SOC_surf_n=SOC_n)
-        rel_error = 1
-        iter = 0
-        while rel_error > rel_tol:
-            J_i = self.calc_j_i(j_tot=J_tot, j_s=J_s)
-            eta_n = self.calc_eta_n(temp=temp, j_i=J_i, c_n=c_n)
-            eta_s = self.calc_eta_s(eta_n=eta_n, OCP_n=OCP_n, OCP_s=self.U_s)
-            J_s_prev = J_s
-            J_s = self.calc_j_s(temp=temp, i_s=self.i_s, eta_s=eta_s)
+        J_s = self.J_s = 0
+        J_tot = self.J_tot = self.J_i =self.calc_j_tot(I=I, S=self.S_n)
+        if I > 0:
+            c_n = self.calc_c_n(k_n=self.k_n, c_nmax=self.c_nmax, c_e=self.c_e, SOC_surf_n=SOC_n)
+            rel_error = 1
+            iter = 0
+            while rel_error > rel_tol:
+                J_i = self.calc_j_i(j_tot=J_tot, j_s=J_s)
+                eta_n = self.calc_eta_n(temp=temp, j_i=J_i, c_n=c_n)
+                eta_s = self.calc_eta_s(eta_n=eta_n, OCP_n=OCP_n, OCP_s=self.U_s)
+                J_s_prev = J_s
+                J_s = self.calc_j_s(temp=temp, i_s=self.i_s, eta_s=eta_s)
 
-            rel_error = np.abs((J_s - J_s_prev)/J_s)
-            iter += 1
-            if iter > max_iter_no:
-                break
-        self.J_s = J_s
-        I_i = self.flux_to_current(molar_flux=J_i, S=self.S_n)
-        I_s = self.flux_to_current(molar_flux=J_s, S=self.S_n)
-        return I_i, I_s
+                rel_error = np.abs((J_s - J_s_prev)/J_s)
+                iter += 1
+                if iter > max_iter_no:
+                    break
+            I_i = self.flux_to_current(molar_flux=J_i, S=self.S_n)
+            I_s = self.flux_to_current(molar_flux=J_s, S=self.S_n)
+            self.J_i = J_i
+            self.J_s = J_s
+            return I_i, I_s
+        else:
+            return I, 0  # in case of discharge, there is no side reaction current.
 
     def solve_delta_L(self, J_s, dt):
         return -(self.MW_SEI * J_s / self.rho) * dt

@@ -82,7 +82,8 @@ class SPPySolver(BaseSolver):
         # initialize result storage lists below.
         x_p_list, x_n_list, V_list, cap_list, cap_charge_list, cap_discharge_list = [], [], [], [], [], []
         battery_cap_list = []
-        t_list, I_list, T_list, R_cell_list, js_list = [], [], [], [], []
+        t_list, I_list, T_list, R_cell_list  = [], [], [], []
+        lst_j_tot, lst_j_i, js_list = [], [], []
         cycle_list, step_name_list = [], []  # cycler specific information
 
         # initialize electrode surface SOC, temperature solvers, and degradation instances below.
@@ -121,7 +122,7 @@ class SPPySolver(BaseSolver):
                                                         dt=dt,
                                                         temp=self.b_cell.elec_n.T,
                                                         I=I)  # update the intercalation current
-                        # self.b_cell.R_cell += delta_R_SEI  # update the cell resistance
+                        self.b_cell.R_cell += delta_R_SEI  # update the cell resistance
 
                     try:
                         self.b_cell.elec_p.SOC = SOC_solver_p(dt=dt, t_prev=t_prev, i_app=I,
@@ -194,9 +195,13 @@ class SPPySolver(BaseSolver):
                     R_cell_list.append(self.b_cell.R_cell)
                     battery_cap_list.append(self.b_cell.cap)
                     if self.bool_degradation:
+                        lst_j_tot.append(SEI_model.J_tot)
+                        lst_j_i.append(SEI_model.J_i)
                         js_list.append(SEI_model.J_s)
                     else:
-                        js_list.append(0)
+                        lst_j_tot.append(0.0)
+                        lst_j_i.append(0.0)
+                        js_list.append(0.0)
 
                     if verbose:
                         print("time elapsed [s]: ", cycler.time_elapsed, ", cycle_no: ", cycle_no,
@@ -208,7 +213,7 @@ class SPPySolver(BaseSolver):
                         x_surf_p=x_p_list, x_surf_n=x_n_list,
                         cap=cap_list, cap_charge=cap_charge_list, cap_discharge=cap_discharge_list,
                         battery_cap=battery_cap_list,
-                        T=T_list, R_cell=R_cell_list, js=js_list,
+                        T=T_list, R_cell=R_cell_list, j_tot=lst_j_tot, j_i=lst_j_i, js=js_list,
                         name=sol_name, save_csv_dir=save_csv_dir)
 
     def simple_solve(self, cycler: CustomDischarge, verbose: bool = False):

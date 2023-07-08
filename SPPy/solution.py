@@ -8,7 +8,7 @@ from SPPy.calc_helpers.constants import Constants
 
 class Solution:
     def __init__(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge,
-                 battery_cap, T, R_cell, js, name=None, save_csv_dir=None):
+                 battery_cap, T, R_cell, j_tot, j_i, js, name=None, save_csv_dir=None):
         self.cycle_num = np.array(cycle_num)
         self.cycle_step = np.array(cycle_step)
         self.t = np.array(t[:len(V)])
@@ -24,7 +24,9 @@ class Solution:
         self.R_cell = np.array(R_cell)
         self.name = name
         self.total_cycles = len(np.unique(self.cycle_num))
-        self.js = js
+        self.j_tot = np.array(j_tot)
+        self.j_i = np.array(j_i)
+        self.js = np.array(js)
         if save_csv_dir is not None:
             self.save_csv_func(save_csv_dir)
 
@@ -231,6 +233,27 @@ class Solution:
         # ax8.set_xlabel('Cycle No.')
         # ax8.set_ylabel(r'Internal resistance [m$\Omega$]')
         # ax8.set_title('Cycling Performance')
+
+        plt.tight_layout()
+        plt.show()
+
+    def plot_SEI(self):
+        fig = plt.figure(figsize=(6.4 * 2, 5.4))
+        ax1 = fig.add_subplot(121)
+        ax1.plot(self.t, self.R_cell)
+        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('R_cell [ohms]')
+
+        ax2 = fig.add_subplot(122)
+        ax2.plot(self.x_surf_n, self.js)
+        ax2.set_xlabel('SOC_surf_n')
+        ax2.set_ylabel('Side Reaction flux [mol/m2/s]')
+
+        color = 'tab:red'
+        ax3 = ax2.twinx()
+        ax3.plot(self.x_surf_n, self.j_tot, color=color)
+        ax3.tick_params(axis='y', labelcolor=color)
+        ax3.set_ylabel('total flux [mol/m2/s]')
 
         plt.tight_layout()
         plt.show()
