@@ -1,7 +1,3 @@
-import numpy as np
-
-from file_path_variables import *
-from data.test import funcs
 import SPPy
 
 
@@ -14,15 +10,13 @@ V_min = 2.5
 SOC_init_p, SOC_init_n = 0.4956, 0.7568 # conditions in the literature source. Guo et al
 
 # Setup battery components
-cell = SPPy.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p, func_OCP_p=funcs.OCP_ref_p,
-                        func_dOCPdT_p=funcs.dOCPdT_p, filepath_n = TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                        func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-                        filepath_electrolyte = TEST_ELECTROLYTE_DIR, filepath_cell = TEST_BATTERY_CELL_DIR, T=T)
-model = SPPy.SPModel(isothermal=False, degradation=False)
+cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
 
-# set-up solver and solve
+# set-up cycler and solver
 dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_min=0.0, SOC_LIB=1)
-solver = SPPy.SPPySolver(b_cell= cell, b_model= model, N=5)
+solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=False, degradation=False)
+
+# simulate
 sol = solver.solve(sol_name='test', cycler=dc, save_csv_dir='')
 
 # Plot

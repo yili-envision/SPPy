@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class BaseCycler:
-    time_elapsed: float = field(default=0.0) # time elapsed during cycling
-    SOC_LIB: float = field(default=0.0) # battery cell SOC
+    time_elapsed: float = field(default=0.0)  # time elapsed during cycling
+    SOC_LIB: float = field(default=0.0)  # battery cell SOC
 
     def get_current(self, step_name):
         """
