@@ -1,8 +1,6 @@
 import unittest
 
-from tests.test_config.file_path_variables import TEST_BATTERY_CELL_DIR, TEST_ELECTROLYTE_DIR, TEST_NEG_ELEC_DIR, TEST_POS_ELEC_DIR
-from SPPy.battery_components import battery_cell
-from data.test import funcs
+import SPPy
 
 
 class TestBatteryCell(unittest.TestCase):
@@ -14,12 +12,8 @@ class TestBatteryCell(unittest.TestCase):
         T = 298.15
         SOC_init_p = 0.4956
         SOC_init_n = 0.7568
-        test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
-                                             func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
-                                             filepath_n = TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                                             func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-                                             filepath_electrolyte = TEST_ELECTROLYTE_DIR,
-                                             filepath_cell = TEST_BATTERY_CELL_DIR, T=T)
+        test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
+
         self.assertEqual(test_cell.rho, 1626)
         self.assertEqual(test_cell.Vol, 3.38e-5)
         self.assertEqual(test_cell.C_p, 750)
@@ -33,13 +27,8 @@ class TestBatteryCell(unittest.TestCase):
         T = 298.15
         SOC_init_p = 0.4956
         SOC_init_n = 0.7568
-        test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
-                                             func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
-                                             filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                                             func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-                                             filepath_electrolyte=TEST_ELECTROLYTE_DIR,
-                                             filepath_cell=TEST_BATTERY_CELL_DIR,
-                                             T=T)
+        test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
+
         self.assertEqual(0.0028230038442483246, test_cell.R_cell)
 
     def test_T(self):
@@ -51,13 +40,8 @@ class TestBatteryCell(unittest.TestCase):
         T = 298.15
         SOC_init_p = 0.4956
         SOC_init_n = 0.7568
-        test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
-                                             func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
-                                             filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                                             func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-                                             filepath_electrolyte=TEST_ELECTROLYTE_DIR,
-                                             filepath_cell=TEST_BATTERY_CELL_DIR,
-                                             T=T)
+        test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
+
         self.assertEqual(test_cell.T, T)
         self.assertEqual(test_cell.elec_p.T, T)
         self.assertEqual(test_cell.elec_n.T, T)
@@ -75,13 +59,8 @@ class TestBatteryCell(unittest.TestCase):
         orig_T = 298.15
         SOC_init_p = 0.4956
         SOC_init_n = 0.7568
-        test_cell = battery_cell.BatteryCell(filepath_p=TEST_POS_ELEC_DIR, SOC_init_p=SOC_init_p,
-                                             func_OCP_p=funcs.OCP_ref_p, func_dOCPdT_p=funcs.dOCPdT_p,
-                                             filepath_n=TEST_NEG_ELEC_DIR, SOC_init_n=SOC_init_n,
-                                             func_OCP_n=funcs.OCP_ref_n, func_dOCPdT_n=funcs.dOCPdT_n,
-                                             filepath_electrolyte=TEST_ELECTROLYTE_DIR,
-                                             filepath_cell=TEST_BATTERY_CELL_DIR,
-                                             T=orig_T)
+        test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=orig_T)
+
         self.assertEqual(test_cell.T_amb, orig_T)
         # Now change to new T but T_amb should not change
         new_T = 313.15
