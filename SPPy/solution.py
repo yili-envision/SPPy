@@ -58,7 +58,9 @@ class Solution:
 
         self.name = name  # name of the solution
 
-        self.total_cycles = len(np.unique(self.cycle_num))
+        # below creates a summary of the cycling information
+        total_cycles = len(np.unique(self.cycle_num))
+        self.cycle_summary = {'cycle_no': total_cycles}
 
         if save_csv_dir is not None:
             self.save_csv_func(save_csv_dir)
