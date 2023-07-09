@@ -21,14 +21,44 @@ still an ongoing work and the documentation is not yet complete.
 ![](Assests/GA.png)
 - Visualization tools</b>
 
+## Installation
+
+Either of the two recommended installation procedures can be used and the steps for these 
+installation procedures are listed below.
+
+### Git Clone
+
+1. Install external python package dependencies required for this repository. The required dependencies are:
+   - numpy
+   - pandas
+   - matplotlib
+   - scipy
+   - tqdm
+2. Clone the repository, for example using git clone git@github.com:m0in92/EV_sim.git using Git Bash.
+
+### Python setup
+1. Download or clone this repository 
+2. Ensure you are on the repository directory (where the setup.py resides) and run python setup.py sdist on the command line.
+3. Step 2 will create a dist directory in the repository. Extract the contents tar.gz file in this directory. Move to 
+the directory where the extracted files reside and run pip install EV_sim on the command line. This will install EV_sim
+on your system (along with the external dependencies) and EV_sim can be imported as any other Python package.
+
+## Usage
+
+Example usage are included in the SPPy/examples folder.
+
 ## Directory Structure:
-```examples``` - contains the example usage of this Python module.
 
-```data``` - contains the datasets used in the examples.
+```parameter_sets``` - contains the datasets used in the examples.
 
-```imgs``` - contains the images used in the documentations.
+```Assests``` - contains the images used in the documentations.
 
-```SPPy``` - contains the source code.
+```SPPy``` - contains the source code. Some of the subdirectories include:
+- ```examples``` - contains the example usage under various simulation conditions.
+
+
+```tests``` - test files for this repository
+
 
 ## Solution Scheme
 ### Single Particle Model:
@@ -41,7 +71,7 @@ still an ongoing work and the documentation is not yet complete.
 - Lumped Thermal Model
 #### _Numerical Schemes:_
 - ODE solvers (rk4)
-### Degradation Models: (under construction)
+### Degradation Models:
 - ROM - SEI growth [2]
 #### _Numerical Schemes:_
 - ODE solvers (Euler)

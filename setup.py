@@ -7,5 +7,5 @@ setup(
     author='Moin Ahmed',
     author_email='moinahmed100@gmail.com',
     packages=['SPPy', 'tests'],
-    install_requires=['numpy', 'pandas', 'scipy', 'tqdm']
+    install_requires=['numpy', 'pandas', 'scipy', 'tqdm', 'matplotlib']
 )
