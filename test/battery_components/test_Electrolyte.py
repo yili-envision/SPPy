@@ -1,7 +1,7 @@
 import unittest
 
 from SPPy.battery_components import electrolyte
-from tests.test_config.file_path_variables import TEST_ELECTROLYTE_DIR, TEST_ELECTROLYTE_ERROR_DIR
+from test.test_config.file_path_variables import TEST_ELECTROLYTE_DIR, TEST_ELECTROLYTE_ERROR_DIR
 
 
 class TestElectrolyte(unittest.TestCase):

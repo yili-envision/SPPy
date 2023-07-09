@@ -7,7 +7,7 @@ class TestBatteryCell(unittest.TestCase):
 
     def test_constructor(self):
         """
-        This test method tests the constructor of the BatteryCell class.
+        This test method test the constructor of the BatteryCell class.
         """
         T = 298.15
         SOC_init_p = 0.4956
@@ -54,7 +54,7 @@ class TestBatteryCell(unittest.TestCase):
 
     def test_T_amb(self):
         """
-        test_T_amb tests if the ambient temperature stays constant even after temperature parameter change.
+        test_T_amb test if the ambient temperature stays constant even after temperature parameter change.
         """
         orig_T = 298.15
         SOC_init_p = 0.4956

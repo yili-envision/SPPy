@@ -1,7 +1,7 @@
 import unittest
 
 from SPPy.battery_components import electrode
-from tests.test_config.file_path_variables import TEST_NEG_ELEC_DIR # imports the test positive electrode's csv file path.
+from test.test_config.file_path_variables import TEST_NEG_ELEC_DIR # imports the test positive electrode's csv file path.
 from data.test import funcs # imports the test OCP vs. SOC function and dOCP/dT functions
 
 

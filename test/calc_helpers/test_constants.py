@@ -6,7 +6,7 @@ class TestConstants(unittest.TestCase):
 
     def test_constants(self):
         """
-        This test method tests the constants defined in the Constants class.
+        This test method test the constants defined in the Constants class.
         """
         self.assertEqual(constants.Constants.F, 96487)
         self.assertEqual(constants.Constants.R, 8.3145)

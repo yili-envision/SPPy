@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from SPPy.battery_components.battery_cell import ParameterSets
 
@@ -7,7 +8,8 @@ class TestParameterSetsBasic(unittest.TestCase):
     def test_constructor_with_valid_name(self):
         params = ParameterSets(name='test')
         self.assertEqual('test', params.name)
-        self.assertEqual('..\..\parameter_sets\\test\param_electrolyte.csv', params.ELECTROLYTE_DIR)
+        self.assertEqual(os.path.basename('..\\..\\parameter_sets\\test\\param_electrolyte.csv'),
+                         os.path.basename(params.ELECTROLYTE_DIR))
 
 
 

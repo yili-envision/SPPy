@@ -6,7 +6,7 @@ import SPPy
 
 class TestSPPySolverBasic(unittest.TestCase):
     """
-    Basic tests to ensure its basic functionalities.
+    Basic test to ensure its basic functionalities.
     """
     T = 298.15
     N = 5

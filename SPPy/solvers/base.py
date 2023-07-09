@@ -5,7 +5,7 @@ import time
 
 
 class BaseSolver:
-    def __init__(self, b_cell, **SEI_model):
+    def __init__(self, b_cell):
         # Below checks and initializes the battery cell instance
         if not isinstance(b_cell, BatteryCell):
             raise TypeError('b_cell needs to be a BatteryCell object.')
