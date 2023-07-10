@@ -21,5 +21,7 @@ solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=False)
 # simulate
 sol = solver.solve(cycler=dc)
 
+print(sol.cycle_summary)
+
 # Plot
 sol.comprehensive_plot()
