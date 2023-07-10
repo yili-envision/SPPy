@@ -5,12 +5,21 @@ import time
 
 
 class BaseSolver:
-    def __init__(self, b_cell):
+    def __init__(self, b_cell, isothermal, degradation):
         # Below checks and initializes the battery cell instance
         if not isinstance(b_cell, BatteryCell):
             raise TypeError('b_cell needs to be a BatteryCell object.')
         else:
             self.b_cell = b_cell
+
+            # Check for incorrect input argument types.
+            if not isinstance(isothermal, bool):
+                raise TypeError("isothermal argument needs to be a bool type.")
+            if not isinstance(degradation, bool):
+                raise TypeError("degradation argument needs to be a bool type.")
+            # Assign class attributes.
+            self.bool_isothermal = isothermal
+            self.bool_degradation = degradation
 
         self.b_model = SPModel()  # initializes the single particle model instance.
 

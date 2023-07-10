@@ -6,7 +6,7 @@ I = 1.656
 T = 298.15
 V_min = 3
 V_max = 4
-num_cycles = 10
+num_cycles = 2
 charge_current = 1.656
 discharge_current = 1.656
 rest_time = 30
@@ -23,7 +23,7 @@ cycler = SPPy.CC(num_cycles=num_cycles, charge_current=charge_current, discharge
 solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=True)
 
 # simulate
-sol = solver.solve(cycler=cycler)
+sol = solver.solve(cycler=cycler, sol_name='sample', save_csv_dir='')
 
 # Plot
 sol.comprehensive_plot()

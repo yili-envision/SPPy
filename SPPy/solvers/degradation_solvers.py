@@ -24,6 +24,7 @@ class ROMSEISolver(ROMSEI):
         self.J_tot = 0  # total lithium-ion flux [mol/m2/s], initialized to zero
         self.J_i = 0  # intercalation lithium-ion flux [mol/m2/s] initialized to zero
         self.J_s = 0  # SEI side reaction flux [mol/m2/s], initialized to zero
+        self.cumulative_J_s = 0  # cumulative SEI side reaction flux [mol/m2], initialized to zero.
 
     def solve_current(self, SOC_n: float, OCP_n: float, temp: float, I: float, rel_tol: float = 1e-6,
                       max_iter_no: int = 10):
@@ -57,6 +58,7 @@ class ROMSEISolver(ROMSEI):
             I_s = self.flux_to_current(molar_flux=J_s, S=self.S_n)
             self.J_i = J_i
             self.J_s = J_s
+            self.cumulative_J_s += self.J_s  # update the cumulative side reaction flux [mol/m2].
             return I_i, I_s
         else:
             return I, 0  # in case of discharge, there is no side reaction current.

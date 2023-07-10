@@ -57,14 +57,14 @@ class SPModel:
                  k_p, S_p, c_smax_p, SOC_p,
                  k_n, S_n, c_smax_n, SOC_n,
                  c_e,
-                 T, I):
+                 T, I_p_i, I_n_i):
         """
         Calculates the cell terminal voltage.
         :param OCP_p: Open-circuit potential of the positive electrode [V]
         :param OCP_n: Open-circuit potential of the negative electrode [V]
         :param R_cell: Battery cell ohmic resistance [ohms]
         :param k_p: positive electrode rate constant [m2 mol0.5 / s]
-        :param S_p:  positive electrode electroactive area [mol/m2]
+        :param S_p:  positive electrode electro-active area [mol/m2]
         :param c_smax_p: positive electrode max. lithium conc. [mol]
         :param SOC_p: positive electrode SOC
         :param k_n: negative electrode rate constant [m2 mol0.5 / s]
@@ -73,9 +73,10 @@ class SPModel:
         :param SOC_n: negative electrode SOC
         :param c_e: electrolyte conc. [mol]
         :param T: Battery cell temperature [K]
-        :param I: applied current [A]
+        :param I_p_i: positiive electrode intercalation applied current [A]
+        :param I_n_i: negative electrode intercalation applied current [A]
         :return: Battery cell terminal voltage [V]
         """
-        m_p = self.m(I=I, k=k_p, S=S_p, c_max=c_smax_p, SOC=SOC_p, c_e=c_e)
-        m_n = self.m(I=I, k=k_n, S=S_n, c_max=c_smax_n, SOC=SOC_n, c_e=c_e)
-        return self.calc_cell_terminal_voltage(OCP_p=OCP_p, OCP_n=OCP_n, m_p=m_p, m_n=m_n, R_cell=R_cell, T=T, I=I)
+        m_p = self.m(I=I_p_i, k=k_p, S=S_p, c_max=c_smax_p, SOC=SOC_p, c_e=c_e)
+        m_n = self.m(I=I_n_i, k=k_n, S=S_n, c_max=c_smax_n, SOC=SOC_n, c_e=c_e)
+        return self.calc_cell_terminal_voltage(OCP_p=OCP_p, OCP_n=OCP_n, m_p=m_p, m_n=m_n, R_cell=R_cell, T=T, I=I_p_i)

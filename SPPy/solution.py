@@ -32,6 +32,25 @@ class SolutionInitializer:
     lst_j_i: list = field(default_factory=lambda: [])  # total intercalation flux at the negative electrode [mol/m2/s]
     lst_j_s: list = field(default_factory=lambda: [])  # side reaction molar flux at the negative electrode [mol/m2/s]
 
+    def update(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge, battery_cap,
+               temp, R_cell, j_tot=0, j_i=0, j_s=0):
+        self.lst_cycle_num.append(cycle_num)
+        self.lst_cycle_step.append(cycle_step)
+        self.lst_t.append(t)
+        self.lst_I.append(I)
+        self.lst_V.append(V)
+        self.lst_x_surf_p.append(x_surf_p)
+        self.lst_x_surf_n.append(x_surf_n)
+        self.lst_cap.append(cap)
+        self.lst_cap_charge.append(cap_charge)
+        self.lst_cap_discharge.append(cap_discharge)
+        self.lst_battery_cap.append(battery_cap)
+        self.lst_temp.append(temp)
+        self.lst_R_cell.append(R_cell)
+        self.lst_j_tot.append(j_tot)
+        self.lst_j_i.append(j_i)
+        self.lst_j_s.append(j_s)
+
 
 class Solution:
     def __init__(self, base_solution_instance: SolutionInitializer, name=None, save_csv_dir=None):
