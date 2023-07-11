@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from SPPy.battery_components import electrode
+from SPPy.battery_components.parameter_set_manager import ParameterSets
 
 
 @dataclass
@@ -39,7 +39,7 @@ class Electrolyte(Electrolyte_):
     """
     def __init__(self, file_path):
         # Read csv and parse for parameters
-        df = electrode.Electrode.parse_csv(file_path=file_path)
+        df = ParameterSets.parse_csv(file_path=file_path)
         conc = df['Conc. [mol m^-3]']
         L = df['Thickness [m]']
         kappa = df['Ionic Conductivity [S m^-1]']

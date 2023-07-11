@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 import collections
 
 import numpy as np
-import pandas as pd
 
+from SPPy.battery_components.parameter_set_manager import ParameterSets
 from SPPy.calc_helpers import constants
 from SPPy.warnings_and_exceptions import custom_exceptions
 
@@ -110,7 +110,7 @@ class Electrode(Electrode_):
         :param func_OCP: function that describes the OCP of the electrode.
         :param func_dOCPdT: a function that describes the change of OCP with temperature
         """
-        df = Electrode.parse_csv(file_path=file_path) # Read and parse the csv file.
+        df = ParameterSets.parse_csv(file_path=file_path) # Read and parse the csv file.
         L = df['Electrode Thickness [m]']
         A = df['Electrode Area [m^2]']
         kappa = df['Ionic Conductivity [S m^-1]']
@@ -129,15 +129,6 @@ class Electrode(Electrode_):
         super().__init__(L=L, A=A, kappa=kappa, epsilon=epsilon, max_conc=max_conc, R=R, S=S, T_ref=T_ref, D_ref=D_ref,
                          k_ref=k_ref, Ea_D=Ea_D, Ea_R=Ea_R, alpha=alpha, brugg=brugg, SOC_init=SOC_init,
                          func_OCP=func_OCP, func_dOCPdT=func_dOCPdT, T=T)
-
-    @staticmethod
-    def parse_csv(file_path):
-        """
-        reads the csv file and returns a Pandas DataFrame.
-        :param file_path: the absolute or relative file drectory of the csv file.
-        :return: the dataframe with the column containing numerical values only.
-        """
-        return pd.read_csv(file_path, index_col=0)["Value"]
 
 
 class PElectrode(Electrode):
@@ -160,7 +151,7 @@ class NElectrode(Electrode):
         self.electrode_type = 'n'
 
         # Add SEI parameters
-        df = self.parse_csv(file_path=file_path)
+        df = ParameterSets.parse_csv(file_path=file_path)
         self.U_s = df['SEI Reference Overpotential [V]']
         self.i_s = df['SEI Exchange Current Density [A m^-1]']
         self.MW_SEI = df['SEI Molar Weight [kg mol^-1]']
