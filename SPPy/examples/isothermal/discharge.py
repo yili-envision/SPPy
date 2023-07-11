@@ -16,10 +16,10 @@ cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_in
 
 # set-up cycler and solver
 dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_min=SOC_min, SOC_LIB=SOC_LIB)
-solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=False)
+solver = SPPy.SPPySolver(b_cell=cell, N=5, isothermal=True, degradation=False)
 
 # simulate
-sol = solver.solve(cycler=dc)
+sol = solver.solve(cycler_instance=dc)
 
 print(sol.cycle_summary)
 

@@ -127,14 +127,23 @@ class SPPySolver(BaseSolver):
         return V
 
     @timer
-    def solve(self, cycler: BaseCycler, sol_name: str = None, save_csv_dir: str = None, verbose: bool = False,
+    def solve(self, cycler_instance: BaseCycler, sol_name: str = None, save_csv_dir: str = None, verbose: bool = False,
               t_increment: float = 0.1, termination_criteria: float = 'V'):
-
         # check for function input parameter types below.
-        if not isinstance(cycler, BaseCycler):
+        if not isinstance(cycler_instance, BaseCycler):
             raise TypeError("cycler needs to be a Cycler object.")
 
+        if isinstance(cycler_instance, CustomCycler):
+            return self._custom_cycler_solve(custom_cycler_instance=cycler_instance, sol_name=sol_name,
+                                             save_csv_dir=save_csv_dir, verbose=verbose, t_increment=t_increment,
+                                             termination_criteria=termination_criteria)
+        else:
+            return self._cycler_solve(cycler=cycler_instance, sol_name=sol_name,
+                                      save_csv_dir=save_csv_dir, verbose=verbose, t_increment=t_increment,
+                                      termination_criteria=termination_criteria)
 
+    def _cycler_solve(self, cycler: BaseCycler, sol_name: str = None, save_csv_dir: str = None, verbose: bool = False,
+                      t_increment: float = 0.1, termination_criteria: float = 'V'):
         # cycling simulation below. The first two loops iterate over the cycle numbers and cycling steps,
         # respectively. The following while loops checks for termination conditions and breaks when it reaches it.
         # The termination criteria are specified within the cycler instance.
@@ -223,8 +232,8 @@ class SPPySolver(BaseSolver):
 
         return Solution(base_solution_instance=self.sol_init, name=sol_name, save_csv_dir=save_csv_dir)
 
-    def simple_solve(self, custom_cycler_instance: CustomCycler, sol_name: str = None, save_csv_dir: str = None,
-                     verbose: bool = False, t_increment: float = 0.1, termination_criteria: str = 'V'):
+    def _custom_cycler_solve(self, custom_cycler_instance: CustomCycler, sol_name: str = None, save_csv_dir: str = None,
+                             verbose: bool = False, t_increment: float = 0.1, termination_criteria: str = 'V'):
         if not isinstance(custom_cycler_instance, CustomCycler):
             raise TypeError('inputted cycler needs to be a CustomCycler object.')
 

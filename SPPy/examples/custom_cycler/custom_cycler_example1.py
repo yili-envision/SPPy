@@ -28,7 +28,7 @@ cycler.plot()
 solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=False)
 
 # simulate and plot
-sol = solver.simple_solve(custom_cycler_instance=cycler, verbose=False)
+sol = solver.solve(cycler_instance=cycler, verbose=False)
 
 plt.plot(sol.t, sol.V)
 plt.show()

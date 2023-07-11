@@ -28,6 +28,24 @@ class TestSPPySolverBasic(unittest.TestCase):
         with self.assertRaises(TypeError):
             SPPy.SPPySolver(b_cell=self.test_cell, N=self.N, isothermal=True, degradation=13)
 
+class TestSPPySolverMethods(unittest.TestCase):
+    N = 5
+    SOC_init_p = 0.4956
+    SOC_init_n = 0.7568
+    I = 1.656
+    T = 298.15
+    V_min = 4.0
+    SOC_min = 0.1
+    SOC_LIB = 0.9
+    test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
+
+    def test_solve(self):
+        dc = SPPy.Discharge(discharge_current=self.I, V_min=self.V_min, SOC_min=self.SOC_min, SOC_LIB=self.SOC_LIB)
+        test_solver = SPPy.SPPySolver(b_cell=self.test_cell, N=self.N, isothermal=True, degradation=False)
+
+        with self.assertRaises(TypeError) as context:
+            test_solver.solve(cycler_instance=0)
+
 
 class TestSPPySolverIsothermal(unittest.TestCase):
     """
@@ -45,7 +63,7 @@ class TestSPPySolverIsothermal(unittest.TestCase):
     test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
     test_solver = SPPy.SPPySolver(b_cell=test_cell, N=N, isothermal=True, degradation=False)
     dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_min=SOC_min, SOC_LIB=SOC_LIB)
-    sol = test_solver.solve(cycler=dc)
+    sol = test_solver.solve(cycler_instance=dc)
 
     def test_terminal_potential(self):
         """
@@ -84,7 +102,7 @@ class TestSppySolverNonIsothermal(unittest.TestCase):
     test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
     test_solver = SPPy.SPPySolver(b_cell=test_cell, N=N, isothermal=False, degradation=False)
     dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_min=SOC_min, SOC_LIB=SOC_LIB)
-    sol = test_solver.solve(cycler=dc)
+    sol = test_solver.solve(cycler_instance=dc)
 
     def test_terminal_potential(self):
         """

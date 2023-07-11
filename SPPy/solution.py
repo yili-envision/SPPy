@@ -33,7 +33,7 @@ class SolutionInitializer:
     lst_j_s: list = field(default_factory=lambda: [])  # side reaction molar flux at the negative electrode [mol/m2/s]
 
     def update(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge, battery_cap,
-               temp, R_cell, j_tot=0, j_i=0, j_s=0):
+               temp, R_cell):
         self.lst_cycle_num.append(cycle_num)
         self.lst_cycle_step.append(cycle_step)
         self.lst_t.append(t)
@@ -47,9 +47,6 @@ class SolutionInitializer:
         self.lst_battery_cap.append(battery_cap)
         self.lst_temp.append(temp)
         self.lst_R_cell.append(R_cell)
-        self.lst_j_tot.append(j_tot)
-        self.lst_j_i.append(j_i)
-        self.lst_j_s.append(j_s)
 
 
 class Solution:
@@ -77,12 +74,17 @@ class Solution:
 
         self.name = name  # name of the solution
 
-        # below creates a summary of the cycling information
-        total_cycles = len(np.unique(self.cycle_num))
-        self.cycle_summary = {'cycle_no': total_cycles}
-
         if save_csv_dir is not None:
             self.save_csv_func(save_csv_dir)
+
+    @property
+    def cycle_summary(self):
+        """
+        Contains a summary of the cycling information
+        :return: (dict) contains summary of the cycling information, including cycle number
+        """
+        total_cycles = len(np.unique(self.cycle_num))
+        self.cycle_summary = {'cycle_no': total_cycles}
 
     def create_df(self):
         df = pd.DataFrame({

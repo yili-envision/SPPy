@@ -21,7 +21,7 @@ cc = SPPy.Charge(charge_current=I, V_max=V_max)
 solver1 = SPPy.SPPySolver(b_cell=cell1, N=5, isothermal=True, degradation=True)
 
 # simulate
-sol1 = solver1.solve(cycler=cc)
+sol1 = solver1.solve(cycler_instance=cc)
 
 # Plot
 sol1.plot_SEI()

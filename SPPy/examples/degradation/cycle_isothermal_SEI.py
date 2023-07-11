@@ -23,7 +23,7 @@ cycler = SPPy.CC(num_cycles=num_cycles, charge_current=charge_current, discharge
 solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=True)
 
 # simulate
-sol = solver.solve(cycler=cycler, sol_name='sample', save_csv_dir='')
+sol = solver.solve(cycler_instance=cycler, sol_name='sample', save_csv_dir='')
 
 # Plot
 sol.comprehensive_plot()
