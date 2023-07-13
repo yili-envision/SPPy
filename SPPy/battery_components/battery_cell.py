@@ -47,7 +47,6 @@ class BatteryCell(BatteryCellBase):
     """
     Class for the BatteryCell object and contains the relevant parameters.
     """
-
     def __init__(self, parameter_set_name: ParameterSets, SOC_init_p: float, SOC_init_n: float, T: float):
         param_set = ParameterSets(name=parameter_set_name)
         df = ParameterSets.parse_csv(file_path=param_set.BATTERY_CELL_DIR)
