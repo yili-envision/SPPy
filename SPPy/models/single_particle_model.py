@@ -10,7 +10,7 @@ class SPModel:
     single particle model.
     """
     @staticmethod
-    def molar_flux_electrode(I: float, S: float, electrode_type: str):
+    def molar_flux_electrode(I: float, S: float, electrode_type: str) -> float:
         """
         Calculates the model lithium-ion flux [mol/m2/s] into the electrodes.
         :param I: (float) Applied current [A]
@@ -26,13 +26,13 @@ class SPModel:
             raise InvalidElectrodeType
 
     @staticmethod
-    def flux_to_current(molar_flux: float, S: float, electrode_type: str):
+    def flux_to_current(molar_flux: float, S: float, electrode_type: str) -> float:
         """
         Converts molar flux [mol/m2/s] to current [A].
         :param molar_flux: molar lithium-ion flux [mol/m2/s]
         :param S: (float) electrode electrochemically active area [m2]
         :param electrode_type: (str) positive electrode ('p') or negative electrode ('n')
-        :return: current [A]
+        :return: (float) current [A]
         """
         if electrode_type == 'p':
             return molar_flux * Constants.F * S
@@ -42,7 +42,7 @@ class SPModel:
             raise InvalidElectrodeType
 
     @staticmethod
-    def m(I, k, S, c_max, SOC, c_e):
+    def m(I, k, S, c_max, SOC, c_e) -> float:
         return I / (Constants.F * k * S * c_max * (c_e ** 0.5) * ((1 - SOC) ** 0.5) * (SOC ** 0.5))
 
     @staticmethod

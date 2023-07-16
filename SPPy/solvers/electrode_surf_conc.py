@@ -37,7 +37,6 @@ class EigenFuncExp:
         else:
             raise InvalidElectrodeType
 
-
     @property
     def x_init(self):
         """
@@ -80,7 +79,7 @@ class EigenFuncExp:
         return [bisect(self.lambda_func, bounds[k][0], bounds[k][1]) for k in range(self.N)]  # k refers to the kth
         # term of the series
 
-    def j_scaled(self, i_app, R, S, D_s, c_smax):
+    def j_scaled(self, i_app, R, S, D_s, c_smax) -> float:
         """
         Returns the dimensionless lithium-ion flux
         :return: (float) dimensionless lithium-ion flux
@@ -126,7 +125,7 @@ class EigenFuncExp:
         u_k_p_func = self.u_k_expression(lambda_k=root_value, D=D_s, R=R, scaled_flux=j_scaled_)
         return ode_solvers.rk4(func=u_k_p_func, t_prev=t_prev, y_prev=u_k_prev, step_size=dt)
 
-    def get_summation_term(self, dt, t_prev, i_app, R, S, D_s, c_smax):
+    def get_summation_term(self, dt, t_prev, i_app, R, S, D_s, c_smax) -> float:
         """
         Calculates and returns the summation term of the Eigen Expansion equation.
         :param t_prev:

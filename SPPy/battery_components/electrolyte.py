@@ -8,11 +8,11 @@ class Electrolyte_:
     """
     Class for the Electrolyte object and contains the relevant electrolyte parameters.
     """
-    conc: float # electrolyte concentration, mol/m3
-    L: float # seperator thickness, m3
-    kappa: float # ionic conductivity, S/m
-    epsilon: float # electrolyte volume fraction
-    brugg: float # Bruggerman Coefficient to be used for all electrolyte purposes
+    conc: float  # electrolyte concentration, mol/m3
+    L: float  # seperator thickness, m3
+    kappa: float  # ionic conductivity, S/m
+    epsilon: float  # electrolyte volume fraction
+    brugg: float  # Bruggerman Coefficient to be used for all electrolyte purposes
 
     def __post_init__(self):
         # Check for types of the input parameters

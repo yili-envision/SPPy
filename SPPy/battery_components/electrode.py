@@ -22,15 +22,15 @@ class Electrode_:
     epsilon: float # Volume Fraction
     max_conc: float # Max. Conc. [mol m^-3]
     R: float # Radius [m]
-    S: Optional[float] # Electroactive Area [m2]
+    S: Optional[float] # Electro-active Area [m2]
     T_ref: float # Reference Temperature [K]
-    D_ref: float # Reference Diffusitivity [m2/s]
+    D_ref: float # Reference Diffusivity [m2/s]
     k_ref: float # Reference Rate Constant [m2.5 / (mol0.5 s)
     Ea_D: float # Activation Energy of Diffusion [J / mol]
     Ea_R: float # Activation Energy of Reaction [J / mol]
     alpha: float # Anodic Transfer Coefficient
     brugg: float # Bruggerman Coefficient
-    SOC_init: float # intial SOC
+    SOC_init: float # initial SOC
     func_OCP: collections.abc.Callable[[float], [float]] # electrode open-circuit potential function that takes SOC as
     # its arguments
     func_dOCPdT: collections.abc.Callable[[float], [float]] # the function that represents the change of open-curcuit

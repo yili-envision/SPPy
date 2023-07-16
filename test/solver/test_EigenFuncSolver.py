@@ -18,6 +18,22 @@ class TestEigenFuncForPositiveElectrode(unittest.TestCase):
         self.assertEqual(5, electrode_SOC.N)
         self.assertEqual('p', electrode_SOC.electrode_type)
 
+        # below confirms the bounds for the eigenvalue equation.
+        self.assertEqual(3.141592653589793, electrode_SOC.lambda_bounds()[0][0])
+        self.assertEqual(6.283185307179586, electrode_SOC.lambda_bounds()[0][1])
+
+        self.assertEqual(6.283185307179586, electrode_SOC.lambda_bounds()[1][0])
+        self.assertEqual(9.42477796076938, electrode_SOC.lambda_bounds()[1][1])
+
+        self.assertEqual(9.42477796076938, electrode_SOC.lambda_bounds()[2][0])
+        self.assertEqual(12.566370614359172, electrode_SOC.lambda_bounds()[2][1])
+
+        self.assertEqual(12.566370614359172, electrode_SOC.lambda_bounds()[3][0])
+        self.assertEqual(15.707963267948966, electrode_SOC.lambda_bounds()[3][1])
+
+        self.assertEqual(15.707963267948966, electrode_SOC.lambda_bounds()[4][0])
+        self.assertEqual(18.84955592153876, electrode_SOC.lambda_bounds()[4][1])
+
         # below confirms the eigenvalues
         self.assertEqual(electrode_SOC.lambda_roots[0], 4.493409457910043)
         self.assertEqual(electrode_SOC.lambda_roots[1], 7.725251836937441)
