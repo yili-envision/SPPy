@@ -6,7 +6,7 @@ class BaseCycler:
     time_elapsed: float = field(default=0.0)  # time elapsed during cycling
     SOC_LIB: float = field(default=0.0)  # battery cell SOC
 
-    def get_current(self, step_name):
+    def get_current(self, step_name: str) -> float:
         """
         Returns the current for a particular cycling step. It is only valid for constant current situations.
         :param step_name: (string) The cycling step name.
