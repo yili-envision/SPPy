@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from scipy.optimize import bisect
 
 from SPPy.calc_helpers.constants import Constants
@@ -168,3 +169,103 @@ class EigenFuncExp:
         :return: (float) The electrode's surface SOC.
         """
         return self.calc_SOC_surf(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D_s, c_smax=c_smax)
+
+
+class CNSolver:
+    """
+    Crank Nickelson Scheme for solving for spherical diffusion in solid electrode in lithium-ion batteries models. The
+    associated PDE uses the mass transport with symmetry condition imposed at r=0 and flux boundary condition at r=R.
+
+    The PDE is:
+    dx/dt = (D/(R^2 * r_scaled^2)) * d(r_scaled^2 * dx/dr_scaled)/dr_scaled
+
+    with BC:
+    dx/dr_scaled = 0 at r_scaled=0
+    dx/dr_scaled = -jR/D*c_smax at r_scaled=1
+    """
+    def __init__(self, c_init: float, spatial_grid_points: int = 100):
+        self.K = spatial_grid_points  # number of spatial grid points
+        self.c_prev = c_init * np.ones(self.K).reshape(-1, 1)  # column vector used for storing concentrations at t_prev
+
+    def dr(self, R: float):
+        return R / self.K
+
+    def A(self, dt: float, R: float, D: float):
+        """
+        Value of the constant A (delta_t * D / delta_r^2)
+        :return: Returns the value of the A constant, used for the forming the matrices
+        """
+        return dt * D / (self.dr(R) ** 2)
+
+    def B(self, dt: float, R: float, D: float):
+        """
+        Value of constant B (delta_t * D / (2 * delta_r))
+        :return:
+        """
+        return dt * D / (2 * self.dr(R))
+
+    def array_R(self, R: float):
+        """
+        Array containing the values of r at every grid point.
+        :return: Array containing the values of r at every grid point.
+        """
+        return np.linspace(0, R, self.K)
+
+    def _RHS_diag_elements(self, dt: float, R: float, D: float):
+        A_ = self.A(dt=dt, R=R, D=D)
+        diag_elements = (1 + A_) * np.ones(self.K)
+        diag_elements[0] = 1 + 3 * A_  # for symmetry boundary condition at r=0
+        diag_elements[-1] = 1 + A_
+        return diag_elements
+
+    def _RHS_lower_diag(self, dt: float, R: float, D: float):
+        A_ = self.A(dt=dt, R=R, D=D)
+        B_ = self.B(dt=dt, R=R, D=D)
+        array_elements = -(A_/2 - B_/self.array_R(R)[1:]) * np.ones(self.K-1)
+        array_elements[-1] = -A_  # for the flux at r=R
+        return array_elements
+
+    def _RHS_upper_diag(self, dt: float, R: float, D: float):
+        A_ = self.A(dt=dt, R=R, D=D)
+        B_ = self.B(dt=dt, R=R, D=D)
+        array_elements = -(A_ / 2 + B_ / self.array_R(R)[1:-1]) * np.ones(self.K - 2)
+        array_elements = np.insert(array_elements, 0, -3 * A_)  # for symmetry boundary condition at r=0
+        return array_elements
+
+    def M(self, dt: float, R: float, D: float):
+        return np.diag(self._RHS_diag_elements(dt=dt, R=R, D=D)) + \
+               np.diag(self._RHS_lower_diag(dt=dt, R=R, D=D), -1) + \
+               np.diag(self._RHS_upper_diag(dt=dt, R=R, D=D), 1)
+
+    def _LHS_array(self, j: float, dt: float, R: float, D: float):
+        A_ = self.A(dt=dt, R=R, D=D)
+        B_ = self.B(dt=dt, R=R, D=D)
+        array_c_temp = np.zeros(self.K).reshape(-1,1)
+        array_c_temp[0][0] = (1-3*A_)*self.c_prev[0][0] + 3*A_*self.c_prev[1][0]  # for the symmetry boundary condition
+        # at r=0
+        array_c_temp[-1][0] = (1-A_) * self.c_prev[-1][0] - (A_+B_/R) * (2*self.dr(R=R)*j/D) + \
+                              A_ * self.c_prev[-2][0]  # for the boundary condition at r=R
+        for i in range(1, len(array_c_temp) - 1):
+            array_c_temp[i][0] = (1 - A_) * self.c_prev[i][0] + \
+                                 (A_ / 2 + B_ / self.array_R(R=R)[i]) * self.c_prev[i + 1][0] + \
+                                 (A_ / 2 - B_ / self.array_R(R=R)[i]) * self.c_prev[i - 1][0]
+        return array_c_temp
+
+    def solve(self, j: float, dt: float, R: float, D: float):
+        """
+        Solves for the lithium-ion concentration after dt. It then updates the class instance's c_prev attribute.
+        :param c_prev: (numpy array) matrix (Kx1) containing the concentrations at t_prev [mol/m3]
+        :param j: (float) lithium flux at r=R [mol/m2/s]
+        :param dt: (float) time difference [s]
+        :param R: (float) electrode particle radius [m]
+        :param D: (float) electrode diffusivity [m2/s]
+        :return:
+        """
+        self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._LHS_array(j=j, dt=dt, R=R, D=D)
+
+    def __call__(self, j: float, dt: float, R: float, D: float, c_smax: float):
+        """
+        Returns the electrode surface SOC
+        """
+        self.solve(j=j, dt=dt, R=R, D=D)
+        return self.c_prev[-1][0] / c_smax
