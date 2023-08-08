@@ -5,7 +5,7 @@ import time
 
 
 class BaseSolver:
-    def __init__(self, b_cell, isothermal, degradation):
+    def __init__(self, b_cell: BatteryCell, isothermal: bool, degradation: bool, electrode_SOC_solver: str = 'eigen'):
         # Below checks and initializes the battery cell instance
         if not isinstance(b_cell, BatteryCell):
             raise TypeError('b_cell needs to be a BatteryCell object.')
@@ -20,6 +20,11 @@ class BaseSolver:
             # Assign class attributes.
             self.bool_isothermal = isothermal
             self.bool_degradation = degradation
+
+        if (electrode_SOC_solver=='eigen') or (electrode_SOC_solver == 'cn'):
+            self.electrode_SOC_solver = electrode_SOC_solver
+        else:
+            raise ValueError('''Electrode SOC solver supports Eigen expansion method ('eigen) or Crank-Nicolson Scheme ('cn')''')
 
         self.b_model = SPModel()  # initializes the single particle model instance.
 

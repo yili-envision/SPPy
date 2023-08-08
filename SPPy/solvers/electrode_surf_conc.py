@@ -5,9 +5,18 @@ from scipy.optimize import bisect
 from SPPy.calc_helpers.constants import Constants
 from SPPy.calc_helpers import ode_solvers
 from SPPy.warnings_and_exceptions.custom_exceptions import InvalidElectrodeType
+from SPPy.models.single_particle_model import SPModel
 
 
-class EigenFuncExp:
+class BaseElectrodeConcSolver:
+    def __init__(self, electrode_type: str):
+        if electrode_type == 'p' or electrode_type == 'n':
+            self.electrode_type = electrode_type  # either positive electrode ('p') or negative electrode ('n').
+        else:
+            raise InvalidElectrodeType
+
+
+class EigenFuncExp(BaseElectrodeConcSolver):
     """
     This solver uses the Eigen Function Expansion method as detailed in ref 1 to calculate the electrode
     surface SOC. As such, it stores all the necessary variables required for the iterative calculations for all time
@@ -33,10 +42,7 @@ class EigenFuncExp:
         self.lst_u_k = [0 for i in range(self.N)]  # a list of solved values of eigenfunctions, the values of which are
         # all initialized to zero.
 
-        if electrode_type == 'p' or electrode_type == 'n':
-            self.electrode_type = electrode_type  # either positive electrode ('p') or negative electrode ('n').
-        else:
-            raise InvalidElectrodeType
+        super().__init__(electrode_type=electrode_type)
 
     @property
     def x_init(self):
@@ -171,7 +177,7 @@ class EigenFuncExp:
         return self.calc_SOC_surf(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D_s, c_smax=c_smax)
 
 
-class CNSolver:
+class CNSolver(BaseElectrodeConcSolver):
     """
     Crank Nickelson Scheme for solving for spherical diffusion in solid electrode in lithium-ion batteries models. The
     associated PDE uses the mass transport with symmetry condition imposed at r=0 and flux boundary condition at r=R.
@@ -183,7 +189,8 @@ class CNSolver:
     dx/dr_scaled = 0 at r_scaled=0
     dx/dr_scaled = -jR/D*c_smax at r_scaled=1
     """
-    def __init__(self, c_init: float, spatial_grid_points: int = 100):
+    def __init__(self, c_init: float, electrode_type: str, spatial_grid_points: int = 100):
+        super().__init__(electrode_type=electrode_type)
         self.K = spatial_grid_points  # number of spatial grid points
         self.c_prev = c_init * np.ones(self.K).reshape(-1, 1)  # column vector used for storing concentrations at t_prev
 
@@ -251,7 +258,7 @@ class CNSolver:
                                  (A_ / 2 - B_ / self.array_R(R=R)[i]) * self.c_prev[i - 1][0]
         return array_c_temp
 
-    def solve(self, j: float, dt: float, R: float, D: float):
+    def solve(self, dt: float, i_app: float, R: float, S: float, D: float):
         """
         Solves for the lithium-ion concentration after dt. It then updates the class instance's c_prev attribute.
         :param c_prev: (numpy array) matrix (Kx1) containing the concentrations at t_prev [mol/m3]
@@ -261,11 +268,12 @@ class CNSolver:
         :param D: (float) electrode diffusivity [m2/s]
         :return:
         """
+        j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
         self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._LHS_array(j=j, dt=dt, R=R, D=D)
 
-    def __call__(self, j: float, dt: float, R: float, D: float, c_smax: float):
+    def __call__(self, dt: float, i_app:float, R: float, S:float, D: float, c_smax: float) -> float:
         """
         Returns the electrode surface SOC
         """
-        self.solve(j=j, dt=dt, R=R, D=D)
+        self.solve(dt=dt, i_app=i_app, R=R, S=S, D=D)
         return self.c_prev[-1][0] / c_smax

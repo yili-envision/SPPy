@@ -12,6 +12,7 @@ class Electrolyte_:
     L: float  # seperator thickness, m3
     kappa: float  # ionic conductivity, S/m
     epsilon: float  # electrolyte volume fraction
+    brugg: float  # Bruggerman coefficient for electrolyte
 
     def __post_init__(self):
         # Check for types of the input parameters

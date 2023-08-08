@@ -84,7 +84,7 @@ class Solution:
         :return: (dict) contains summary of the cycling information, including cycle number
         """
         total_cycles = len(np.unique(self.cycle_num))
-        self.cycle_summary = {'cycle_no': total_cycles}
+        return {'cycle_no': total_cycles}
 
     def create_df(self):
         df = pd.DataFrame({
