@@ -258,7 +258,7 @@ class CNSolver(BaseElectrodeConcSolver):
                                  (A_ / 2 - B_ / self.array_R(R=R)[i]) * self.c_prev[i - 1][0]
         return array_c_temp
 
-    def solve(self, dt: float, i_app: float, R: float, S: float, D: float):
+    def solve(self, dt: float, i_app: float, R: float, S: float, D: float, solver_method:str):
         """
         Solves for the lithium-ion concentration after dt. It then updates the class instance's c_prev attribute.
         :param c_prev: (numpy array) matrix (Kx1) containing the concentrations at t_prev [mol/m3]
@@ -269,11 +269,18 @@ class CNSolver(BaseElectrodeConcSolver):
         :return:
         """
         j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
-        self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._LHS_array(j=j, dt=dt, R=R, D=D)
+        if solver_method == "inverse":
+            self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._LHS_array(j=j, dt=dt, R=R, D=D)
+        elif solver_method == "TDMA":
+            self.c_prev = ode_solvers.TDMAsolver(l_diag=self._RHS_lower_diag(dt=dt, R=R, D=D),
+                                                 diag=self._RHS_diag_elements(dt=dt, R=R, D=D),
+                                                 u_diag=self._RHS_upper_diag(dt=dt, R=R, D=D),
+                                                 col_vec=self._LHS_array(j=j, dt=dt, R=R, D=D).flatten()).reshape(-1,1)
 
-    def __call__(self, dt: float, i_app:float, R: float, S:float, D: float, c_smax: float) -> float:
+    def __call__(self, dt: float, i_app:float, R: float, S:float, D: float, c_smax: float,
+                 solver_method: str="inverse") -> float:
         """
         Returns the electrode surface SOC
         """
-        self.solve(dt=dt, i_app=i_app, R=R, S=S, D=D)
+        self.solve(dt=dt, i_app=i_app, R=R, S=S, D=D, solver_method=solver_method)
         return self.c_prev[-1][0] / c_smax
