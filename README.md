@@ -62,9 +62,10 @@ Example usage are included in the SPPy/examples folder.
 
 ## Solution Scheme
 ### Single Particle Model:
-#### _Diffusion Equation Formulation:_
+#### _Diffusion Equation Formulation:
+- Crank-Nicolson Method
 - Eigen Function Expansion [1]
-- Two Term Polynomial (not yet implemented)
+- Two Term Polynomial [2]
 #### _Numerical Schemes:_
 - ODE solvers (rk4)
 ### Thermal Models:
@@ -72,9 +73,14 @@ Example usage are included in the SPPy/examples folder.
 #### _Numerical Schemes:_
 - ODE solvers (rk4)
 ### Degradation Models:
-- ROM - SEI growth [2]
+- ROM - SEI growth [3]
 #### _Numerical Schemes:_
 - ODE solvers (Euler)
 ### References:
 1. Guo, M., Sikha, G., & White, R. E. (2011). Single-Particle Model for a Lithium-Ion Cell: Thermal Behavior. Journal of The Electrochemical Society, 158(2), A122. https://doi.org/10.1149/1.3521314/XML
-2. Randall, A. v., Perkins, R. D., Zhang, X., & Plett, G. L. (2012). Controls oriented reduced order modeling of solid-electrolyte interphase layer growth. Journal of Power Sources, 209, 282–288. https://doi.org/10.1016/J.JPOWSOUR.2012.02.114
+2. Torchio, M., Magni, L., Gopaluni, R. B., Braatz, R. D., & Raimondo, D. M. (2016).
+    LIONSIMBA: A Matlab Framework Based on a Finite Volume Model Suitable for Li-Ion Battery Design, Simulation,
+    and Control.
+    Journal of The Electrochemical Society, 163(7), A1192–A1205.
+    https://doi.org/10.1149/2.0291607JES/XML
+3. Randall, A. v., Perkins, R. D., Zhang, X., & Plett, G. L. (2012). Controls oriented reduced order modeling of solid-electrolyte interphase layer growth. Journal of Power Sources, 209, 282–288. https://doi.org/10.1016/J.JPOWSOUR.2012.02.114

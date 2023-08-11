@@ -11,7 +11,9 @@ def rk4(func, t_prev, y_prev, step_size):
     k4 = func(y_prev + k3*step_size, t_prev + step_size)
     return y_prev + (1/6.0) * (k1 + 2*k2 + 2*k3 + k4) * step_size
 
-def TDMAsolver(l_diag: npt.ArrayLike, diag: npt.ArrayLike, u_diag: npt.ArrayLike, col_vec: npt.ArrayLike) -> npt.ArrayLike:
+
+def TDMAsolver(l_diag: npt.ArrayLike, diag: npt.ArrayLike, u_diag: npt.ArrayLike, col_vec: npt.ArrayLike) \
+        -> npt.ArrayLike:
     '''
     TDMA (a.k.a Thomas algorithm) solver for tridiagonal system of equations.
     Code Modified from:

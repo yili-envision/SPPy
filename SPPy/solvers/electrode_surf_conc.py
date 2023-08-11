@@ -1,3 +1,4 @@
+from typing import Callable
 import numpy as np
 import numpy.typing as npt
 from scipy.optimize import bisect
@@ -218,33 +219,33 @@ class CNSolver(BaseElectrodeConcSolver):
         """
         return np.linspace(0, R, self.K)
 
-    def _RHS_diag_elements(self, dt: float, R: float, D: float):
+    def _LHS_diag_elements(self, dt: float, R: float, D: float) -> npt.ArrayLike:
         A_ = self.A(dt=dt, R=R, D=D)
-        diag_elements = (1 + A_) * np.ones(self.K)
-        diag_elements[0] = 1 + 3 * A_  # for symmetry boundary condition at r=0
-        diag_elements[-1] = 1 + A_
-        return diag_elements
+        array_elements = (1 + A_) * np.ones(self.K)
+        array_elements[0] = 1 + 3 * A_  # for symmetry boundary condition at r=0
+        array_elements[-1] = 1 + A_
+        return array_elements
 
-    def _RHS_lower_diag(self, dt: float, R: float, D: float):
+    def _LHS_lower_diag(self, dt: float, R: float, D: float) -> npt.ArrayLike:
         A_ = self.A(dt=dt, R=R, D=D)
         B_ = self.B(dt=dt, R=R, D=D)
         array_elements = -(A_/2 - B_/self.array_R(R)[1:]) * np.ones(self.K-1)
         array_elements[-1] = -A_  # for the flux at r=R
         return array_elements
 
-    def _RHS_upper_diag(self, dt: float, R: float, D: float):
+    def _LHS_upper_diag(self, dt: float, R: float, D: float) -> npt.ArrayLike:
         A_ = self.A(dt=dt, R=R, D=D)
         B_ = self.B(dt=dt, R=R, D=D)
         array_elements = -(A_ / 2 + B_ / self.array_R(R)[1:-1]) * np.ones(self.K - 2)
         array_elements = np.insert(array_elements, 0, -3 * A_)  # for symmetry boundary condition at r=0
         return array_elements
 
-    def M(self, dt: float, R: float, D: float):
-        return np.diag(self._RHS_diag_elements(dt=dt, R=R, D=D)) + \
-               np.diag(self._RHS_lower_diag(dt=dt, R=R, D=D), -1) + \
-               np.diag(self._RHS_upper_diag(dt=dt, R=R, D=D), 1)
+    def M(self, dt: float, R: float, D: float) -> npt.ArrayLike:
+        return np.diag(self._LHS_diag_elements(dt=dt, R=R, D=D)) + \
+               np.diag(self._LHS_lower_diag(dt=dt, R=R, D=D), -1) + \
+               np.diag(self._LHS_upper_diag(dt=dt, R=R, D=D), 1)
 
-    def _LHS_array(self, j: float, dt: float, R: float, D: float):
+    def _RHS_array(self, j: float, dt: float, R: float, D: float):
         A_ = self.A(dt=dt, R=R, D=D)
         B_ = self.B(dt=dt, R=R, D=D)
         array_c_temp = np.zeros(self.K).reshape(-1,1)
@@ -270,17 +271,67 @@ class CNSolver(BaseElectrodeConcSolver):
         """
         j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
         if solver_method == "inverse":
-            self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._LHS_array(j=j, dt=dt, R=R, D=D)
+            self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._RHS_array(j=j, dt=dt, R=R, D=D)
         elif solver_method == "TDMA":
-            self.c_prev = ode_solvers.TDMAsolver(l_diag=self._RHS_lower_diag(dt=dt, R=R, D=D),
-                                                 diag=self._RHS_diag_elements(dt=dt, R=R, D=D),
-                                                 u_diag=self._RHS_upper_diag(dt=dt, R=R, D=D),
-                                                 col_vec=self._LHS_array(j=j, dt=dt, R=R, D=D).flatten()).reshape(-1,1)
+            self.c_prev = ode_solvers.TDMAsolver(l_diag=self._LHS_lower_diag(dt=dt, R=R, D=D),
+                                                 diag=self._LHS_diag_elements(dt=dt, R=R, D=D),
+                                                 u_diag=self._LHS_upper_diag(dt=dt, R=R, D=D),
+                                                 col_vec=self._RHS_array(j=j, dt=dt, R=R, D=D)).flatten().reshape(-1, 1)
 
-    def __call__(self, dt: float, i_app:float, R: float, S:float, D: float, c_smax: float,
-                 solver_method: str="inverse") -> float:
+    def __call__(self, dt: float, t_prev: float, i_app:float, R: float, S:float, D_s: float, c_smax: float,
+                 solver_method: str = "TDMA") -> float:
         """
         Returns the electrode surface SOC
         """
-        self.solve(dt=dt, i_app=i_app, R=R, S=S, D=D, solver_method=solver_method)
+        self.solve(dt=dt, i_app=i_app, R=R, S=S, D=D_s, solver_method=solver_method)
         return self.c_prev[-1][0] / c_smax
+
+
+class PolynomialApproximation(BaseElectrodeConcSolver):
+    """
+    Two=parameter polynomial approximation for the spherical diffusion using two parameters [1].
+
+    Reference:
+    [1] Torchio, M., Magni, L., Gopaluni, R. B., Braatz, R. D., & Raimondo, D. M. (2016).
+    LIONSIMBA: A Matlab Framework Based on a Finite Volume Model Suitable for Li-Ion Battery Design, Simulation,
+    and Control.
+    Journal of The Electrochemical Society, 163(7), A1192–A1205.
+    https://doi.org/10.1149/2.0291607JES/XML
+    """
+    def __init__(self, c_init: float, electrode_type: str, type: str = 'two'):
+        super().__init__(electrode_type=electrode_type)
+        self.c_s_avg_prev = c_init
+        self.c_surf = c_init
+        if type=='two' or type == 'higher':
+            self.type = type
+        else:
+            raise ValueError(f"{type} is not recognized as a solver type")
+        if self.type == 'higher':
+            self.q = 0
+
+    def func_c_s_avg(self, j: float, R: float) -> Callable:
+        def wrapper(r, t):
+            return -3 * j / R
+        return wrapper
+
+    def func_q(self, j: float, R: float, D: float) -> Callable:
+        def wrapper(x, t):
+            return -30 * (D/R**2) * x - (45/2) * (j/R**2)
+        return wrapper
+
+    def solve(self, dt: float, t_prev: float, i_app: float, R: float, S: float, D: float):
+        j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
+        self.c_s_avg_prev = ode_solvers.rk4(func=self.func_c_s_avg(j=j, R=R), t_prev=t_prev,
+                                             y_prev=self.c_s_avg_prev, step_size=dt)
+        if self.type != 'two':
+            self.q = ode_solvers.rk4(self.func_q(j=j, R=R, D=D), t_prev=t_prev, y_prev=self.q, step_size=dt)
+            self.c_surf = -(j*R)/(35*D) + 8 * R * self.q + self.c_s_avg_prev
+            print(self.c_surf)
+        else:
+            self.c_surf = -(R/D) * (j/5) + self.c_s_avg_prev
+
+    def __call__(self, dt: float, t_prev: float, i_app: float, R: float, S: float, D_s: float, c_smax: float) -> float:
+        self.solve(dt=dt, i_app=i_app, t_prev=t_prev, R=R, S=S, D=D_s)
+        return self.c_surf / c_smax
+
+

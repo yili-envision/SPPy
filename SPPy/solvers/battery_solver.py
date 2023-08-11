@@ -9,7 +9,7 @@ from SPPy.solution import SolutionInitializer, Solution
 from SPPy.warnings_and_exceptions.custom_warnings import *
 from SPPy.warnings_and_exceptions.custom_exceptions import *
 
-from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver
+from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver, PolynomialApproximation
 from SPPy.models.thermal import Lumped
 from SPPy.solvers.degradation_solvers import ROMSEISolver
 
@@ -29,7 +29,7 @@ class SPPySolver(BaseSolver):
     """
 
     def __init__(self, b_cell, isothermal: bool = True, degradation: bool = False, N: int = 5,
-                 electrode_SOC_solver:str ='eigen'):
+                 electrode_SOC_solver: str = 'eigen'):
         super().__init__(b_cell=b_cell, isothermal=isothermal, degradation=degradation,
                          electrode_SOC_solver=electrode_SOC_solver)
         self.N = N
@@ -42,8 +42,16 @@ class SPPySolver(BaseSolver):
             self.SOC_solver_p = EigenFuncExp(x_init=self.b_cell.elec_p.SOC, n=self.N, electrode_type='p')
             self.SOC_solver_n = EigenFuncExp(x_init=self.b_cell.elec_n.SOC, n=self.N, electrode_type='n')
         elif self.electrode_SOC_solver == 'cn':
-            self.SOC_solver_p = CNSolver(c_init=self.b_cell.elec_p.max_conc * self.b_cell.elec_p.SOC_init, electrode_type='p')
-            self.SOC_solver_n = CNSolver(c_init=self.b_cell.elec_n.max_conc * self.b_cell.elec_n.SOC, electrode_type='n')
+            self.SOC_solver_p = CNSolver(c_init=self.b_cell.elec_p.max_conc * self.b_cell.elec_p.SOC_init,
+                                         electrode_type='p')
+            self.SOC_solver_n = CNSolver(c_init=self.b_cell.elec_n.max_conc * self.b_cell.elec_n.SOC,
+                                         electrode_type='n')
+        elif self.electrode_SOC_solver == "poly":
+            self.SOC_solver_p = PolynomialApproximation(
+                c_init=self.b_cell.elec_p.max_conc * self.b_cell.elec_p.SOC_init,
+                electrode_type='p')
+            self.SOC_solver_n = PolynomialApproximation(c_init=self.b_cell.elec_n.max_conc * self.b_cell.elec_n.SOC,
+                                                        electrode_type='n')
 
         self.t_model = Lumped(b_cell=self.b_cell)  # thermal model object
 
@@ -113,26 +121,17 @@ class SPPySolver(BaseSolver):
             I_i = I  # intercalation current is same at the input current
 
         # Calc. electrode surface SOC below and update the battery cell's instance attributes.
-        if self.electrode_SOC_solver == 'eigen':
-            self.b_cell.elec_p.SOC = self.SOC_solver_p(dt=dt, t_prev=t_prev, i_app=I,
-                                                       R=self.b_cell.elec_p.R,
-                                                       S=self.b_cell.elec_p.S,
-                                                       D_s=self.b_cell.elec_p.D,
-                                                       c_smax=self.b_cell.elec_p.max_conc)  # calc p surf SOC
-            self.b_cell.elec_n.SOC = self.SOC_solver_n(dt=dt, t_prev=t_prev, i_app=I_i,
-                                                       R=self.b_cell.elec_n.R,
-                                                       S=self.b_cell.elec_n.S,
-                                                       D_s=self.b_cell.elec_n.D,
-                                                       c_smax=self.b_cell.elec_n.max_conc)  # calc n surf SOC
-        elif self.electrode_SOC_solver == 'cn':
-            self.b_cell.elec_p.SOC = self.SOC_solver_p(dt=dt, i_app=I,
-                                                       R=self.b_cell.elec_p.R, S=self.b_cell.elec_p.S,
-                                                       D=self.b_cell.elec_p.D, c_smax=self.b_cell.elec_p.max_conc) #
-            # calc p surf SOC
-            self.b_cell.elec_n.SOC = self.SOC_solver_n(dt=dt, i_app=I,
-                                                       R=self.b_cell.elec_n.R, S=self.b_cell.elec_n.S,
-                                                       D=self.b_cell.elec_n.D, c_smax=self.b_cell.elec_n.max_conc)  #
-            # calc n surf SOC
+        # if self.electrode_SOC_solver == 'eigen':
+        self.b_cell.elec_p.SOC = self.SOC_solver_p(dt=dt, t_prev=t_prev, i_app=I,
+                                                   R=self.b_cell.elec_p.R,
+                                                   S=self.b_cell.elec_p.S,
+                                                   D_s=self.b_cell.elec_p.D,
+                                                   c_smax=self.b_cell.elec_p.max_conc)  # calc p surf SOC
+        self.b_cell.elec_n.SOC = self.SOC_solver_n(dt=dt, t_prev=t_prev, i_app=I_i,
+                                                   R=self.b_cell.elec_n.R,
+                                                   S=self.b_cell.elec_n.S,
+                                                   D_s=self.b_cell.elec_n.D,
+                                                   c_smax=self.b_cell.elec_n.max_conc)  # calc n surf SOC
 
         V = self.calc_terminal_potential(I_p_i=I, I_n_i=I_i)  # calc battery cell terminal voltage
 
