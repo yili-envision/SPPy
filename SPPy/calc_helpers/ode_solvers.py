@@ -1,10 +1,21 @@
+from typing import Callable
+
 import numpy as np
 import numpy.typing as npt
 
 def euler(func, t_prev, y_prev, step_size):
     return y_prev + func(y_prev, t_prev) * step_size
 
-def rk4(func, t_prev, y_prev, step_size):
+def rk4(func: Callable, t_prev: float, y_prev: float, step_size: float):
+    """
+    Solves for the value of y in the next time step for a ODE
+                dy/dt = f(y,t)
+    :param func: (Callable) function that takes y and t as its input arguments (in that order).
+    :param t_prev: The value of time in the previous time step [s]
+    :param y_prev: The value of y in the previous time step
+    :param step_size: the difference in time between the current and previous time steps [s]
+    :return: The value of y at the next time step
+    """
     k1 = func(y_prev, t_prev)
     k2 = func(y_prev + 0.5*k1*step_size, t_prev + 0.5*step_size)
     k3 = func(y_prev + 0.5*k2*step_size, t_prev + 0.5*step_size)

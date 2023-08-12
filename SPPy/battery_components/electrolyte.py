@@ -8,8 +8,8 @@ class Electrolyte_:
     """
     Class for the Electrolyte object and contains the relevant electrolyte parameters.
     """
-    conc: float  # electrolyte concentration, mol/m3
     L: float  # seperator thickness, m3
+    conc: float  # electrolyte concentration, mol/m3
     kappa: float  # ionic conductivity, S/m
     epsilon: float  # electrolyte volume fraction
     brugg: float  # Bruggerman coefficient for electrolyte

@@ -316,7 +316,7 @@ class PolynomialApproximation(BaseElectrodeConcSolver):
 
     def func_q(self, j: float, R: float, D: float) -> Callable:
         def wrapper(x, t):
-            return -30 * (D/R**2) * x - (45/2) * (j/R**2)
+            return -30 * (D/R**2) * x - (45*j/(2 * R**2))
         return wrapper
 
     def solve(self, dt: float, t_prev: float, i_app: float, R: float, S: float, D: float):
@@ -325,8 +325,7 @@ class PolynomialApproximation(BaseElectrodeConcSolver):
                                              y_prev=self.c_s_avg_prev, step_size=dt)
         if self.type != 'two':
             self.q = ode_solvers.rk4(self.func_q(j=j, R=R, D=D), t_prev=t_prev, y_prev=self.q, step_size=dt)
-            self.c_surf = -(j*R)/(35*D) + 8 * R * self.q + self.c_s_avg_prev
-            print(self.c_surf)
+            self.c_surf = -(j*R)/(35*D) + 8 * R * self.q / 35 + self.c_s_avg_prev
         else:
             self.c_surf = -(R/D) * (j/5) + self.c_s_avg_prev
 
