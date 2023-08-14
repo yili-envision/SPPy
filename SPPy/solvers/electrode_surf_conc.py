@@ -46,7 +46,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         super().__init__(electrode_type=electrode_type)
 
     @property
-    def x_init(self):
+    def x_init(self) -> float:
         """
         Initial electrode SOC
         :return: (float) Initial electrode SOC
@@ -54,7 +54,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         return self.x_init_
 
     @property
-    def N(self):
+    def N(self) -> int:
         """
         The number of terms in the solution series.
         :return: (int) number of terms in the solution series.
@@ -62,7 +62,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         return self.N_
 
     @staticmethod
-    def lambda_func(lambda_k):
+    def lambda_func(lambda_k) -> float:
         """
         Algebraic equation from which the eigenvalues can be calculated.
         :param lambda_k: (float) eigen value ot the kth term.
@@ -70,7 +70,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         """
         return np.sin(lambda_k) - lambda_k * np.cos(lambda_k)
 
-    def lambda_bounds(self):
+    def lambda_bounds(self) -> npt.ArrayLike:
         """
         The list which contains the tuple containing the lower and upper bounds of the eigenvalues.
         :return: (list) list containing the tuple of bounds for the eigenvalues.
@@ -78,7 +78,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         return [(np.pi * (1 + k), np.pi * (2 + k)) for k in range(self.N)]  # k refers to the kth term of the series
 
     @property
-    def lambda_roots(self):
+    def lambda_roots(self) -> npt.ArrayLike:
         """
         Uses the bisect method to solve for the eigenvalue algebraic equation within the bounds.
         :return: (list) list containing the eigenvalues for all solution terms.
@@ -98,7 +98,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         elif self.electrode_type == 'n':
             return j_scaled_
 
-    def update_integ_term(self, dt, i_app, R, S, D_s, c_smax):
+    def update_integ_term(self, dt, i_app, R, S, D_s, c_smax) -> float:
         """
         Updates the integration term. Integration is performed using simple algebraic integration.
         :return: (float) updated integration term.
@@ -106,7 +106,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         self.integ_term += 3 * (D_s * self.j_scaled(i_app=i_app, R=R, S=S, D_s=D_s, c_smax=c_smax) / (R ** 2)) * dt
 
     @staticmethod
-    def u_k_expression(lambda_k, D, R, scaled_flux):
+    def u_k_expression(lambda_k, D, R, scaled_flux) -> Callable:
         """
         Returns a function that represents the eigenfunction ode.
         :param lambda_k: eigenvalue of the kth term
@@ -119,7 +119,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
             return -(lambda_k ** 2) * D * x / (R ** 2) + 2 * D * scaled_flux / (R ** 2)
         return u_k_odeFunc
 
-    def solve_u_k(self, root_value, t_prev, dt, u_k_prev, i_app, R, S, D_s, c_smax):
+    def solve_u_k(self, root_value, t_prev, dt, u_k_prev, i_app, R, S, D_s, c_smax) -> float:
         """
         Calculates the eigenfunction value from the eigen values using the ode function. This ode function is solved
         using the rk4 ode solver.
@@ -151,7 +151,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
             sum_term += self.lst_u_k[iter_root] - (2 * j_scaled_ / (root_value ** 2))
         return sum_term
 
-    def calc_SOC_surf(self, dt, t_prev, i_app, R, S, D_s, c_smax):
+    def calc_SOC_surf(self, dt, t_prev, i_app, R, S, D_s, c_smax) -> float:
         """
         Calculates the electrode surface SOC using the Eigen Expansion method.
         :param dt: The time difference between the current and the previous time steps [s].
@@ -163,7 +163,7 @@ class EigenFuncExp(BaseElectrodeConcSolver):
         self.update_integ_term(dt=dt, i_app=i_app, R=R, S=S, D_s=D_s, c_smax=c_smax)
         return self.x_init + j_scaled_ / 5 + self.integ_term + sum_term
 
-    def __call__(self, dt, t_prev, i_app, R, S, D_s, c_smax):
+    def __call__(self, dt, t_prev, i_app, R, S, D_s, c_smax) -> float:
         """
         This method calculates the electrode surface SOC
         :param dt: Time difference between current and previous time steps [s].

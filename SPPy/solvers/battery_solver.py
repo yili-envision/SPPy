@@ -104,7 +104,7 @@ class SPPySolver(BaseSolver):
     def delta_cap(I, dt):
         return (1 / 3600) * (np.abs(I) * dt)
 
-    def solve_iteration_one_step(self, t_prev: float, dt: float, I: float):
+    def solve_iteration_one_step(self, t_prev: float, dt: float, I: float) -> float:
         # Account for SEI growth
         if self.bool_degradation:
             I_i, I_s, delta_R_SEI = self.SEI_model(SOC_n=self.b_cell.elec_n.SOC, OCP_n=self.b_cell.elec_n.OCP,
