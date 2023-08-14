@@ -2,11 +2,9 @@ import numpy as np
 from tqdm import tqdm
 
 from SPPy.solvers.base import BaseSolver, timer
-from SPPy.calc_helpers.constants import Constants
 from SPPy.calc_helpers import ode_solvers
 from SPPy.solution import SolutionInitializer, Solution
 
-from SPPy.warnings_and_exceptions.custom_warnings import *
 from SPPy.warnings_and_exceptions.custom_exceptions import *
 
 from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver, PolynomialApproximation

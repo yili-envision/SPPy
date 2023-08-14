@@ -4,13 +4,13 @@ from SPPy.calc_helpers.constants import Constants
 from SPPy.warnings_and_exceptions.custom_exceptions import InvalidElectrodeType
 
 
-class SPModel:
+class SPM:
     """
     This class contains the methods for calculating the molar lithium flux, cell terminal voltage according to the
     single particle model.
     """
-    @staticmethod
-    def molar_flux_electrode(I: float, S: float, electrode_type: str) -> float:
+    @classmethod
+    def molar_flux_electrode(cls, I: float, S: float, electrode_type: str) -> float:
         """
         Calculates the model lithium-ion flux [mol/m2/s] into the electrodes.
         :param I: (float) Applied current [A]
@@ -46,7 +46,7 @@ class SPModel:
         return I / (Constants.F * k * S * c_max * (c_e ** 0.5) * ((1 - SOC) ** 0.5) * (SOC ** 0.5))
 
     @staticmethod
-    def calc_cell_terminal_voltage(OCP_p, OCP_n, m_p, m_n, R_cell, T, I):
+    def calc_cell_terminal_voltage(OCP_p, OCP_n, m_p, m_n, R_cell, T, I) -> float:
         V = OCP_p - OCP_n
         V += (2 * Constants.R * T / Constants.F) * np.log((np.sqrt(m_p ** 2 + 4) + m_p) / 2)
         V += (2 * Constants.R * T / Constants.F) * np.log((np.sqrt(m_n ** 2 + 4) + m_n) / 2)
@@ -57,7 +57,7 @@ class SPModel:
                  k_p, S_p, c_smax_p, SOC_p,
                  k_n, S_n, c_smax_n, SOC_n,
                  c_e,
-                 T, I_p_i, I_n_i):
+                 T, I_p_i, I_n_i) -> float:
         """
         Calculates the cell terminal voltage.
         :param OCP_p: Open-circuit potential of the positive electrode [V]
@@ -80,3 +80,29 @@ class SPModel:
         m_p = self.m(I=I_p_i, k=k_p, S=S_p, c_max=c_smax_p, SOC=SOC_p, c_e=c_e)
         m_n = self.m(I=I_n_i, k=k_n, S=S_n, c_max=c_smax_n, SOC=SOC_n, c_e=c_e)
         return self.calc_cell_terminal_voltage(OCP_p=OCP_p, OCP_n=OCP_n, m_p=m_p, m_n=m_n, R_cell=R_cell, T=T, I=I_p_i)
+
+
+class SPMe:
+    """
+    This class contains the methods to calculate the molar ionic flux in the electrode regions and the cell terminal
+    voltage as expressed in the SPMe model [1].
+
+    Reference:
+    [1] S. J. Moura, F. B. Argomedo, R. Klein, A. Mirtabatabaei and M. Krstic,
+    "Battery State Estimation for a Single Particle Model With Electrolyte Dynamics,"
+    in IEEE Transactions on Control Systems Technology, vol. 25, no. 2, pp. 453-468, March 2017,
+    doi: 10.1109/TCST.2016.2571663.
+    """
+    @classmethod
+    def volumetric_molar_fux(cls, I: float, S:float, electrode_type: str) -> float:
+        return SPM.molar_flux_electrode(I=I, S=S, electrode_type=electrode_type)
+
+    @classmethod
+    def a_s(cls, epsilon: float, R: float) -> float:
+        """
+        Calculates the electrode's interfacial surface area [m2/m3]
+        :param epsilon: active material volume fraction
+        :param R: radius of the electrode particle
+        :return: (float) electrode's interfacial surface area [m2/m3]
+        """
+        return 3 * epsilon / R

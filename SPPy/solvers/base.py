@@ -1,5 +1,5 @@
 from SPPy.battery_components.battery_cell import BatteryCell
-from SPPy.models.single_particle_model import SPModel
+from SPPy.models.battery import SPM
 from SPPy.warnings_and_exceptions.custom_exceptions import *
 import time
 
@@ -27,7 +27,7 @@ class BaseSolver:
             raise ValueError('''Electrode SOC solver supports Eigen expansion method ('eigen) 
             or Crank-Nicolson Scheme ('cn') or Two-Term Polynomial Approximation ('poly')''')
 
-        self.b_model = SPModel()  # initializes the single particle model instance.
+        self.b_model = SPM()  # initializes the single particle model instance.
 
     def check_potential_limits(self, V):
         if V < self.b_cell.V_min:

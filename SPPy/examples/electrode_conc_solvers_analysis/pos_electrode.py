@@ -1,7 +1,7 @@
 import time
 import matplotlib.pyplot as plt
 
-from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver
+from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver, PolynomialApproximation
 
 
 # Electrode parameters below
@@ -14,6 +14,7 @@ SOC_init = 0.4956  # initial electrode SOC
 # initiate solver instances below
 eigen_solver = EigenFuncExp(x_init=SOC_init, n=5, electrode_type='p')
 cn_solver = CNSolver(c_init=c_max*SOC_init, electrode_type='p')
+poly_solver = PolynomialApproximation(c_init=SOC_init*c_max, electrode_type='p', type='higher')
 
 # ----------------------------------Eigen Solver------------------------------------------------------------------------
 # Simulation parameters below
@@ -44,13 +45,31 @@ lst_time_cn, lst_cn_solver = [], []
 t_start = time.time()  # start timer
 SOC_cn = SOC_init
 while SOC_cn < 1:
-    SOC_cn = cn_solver(dt=dt, i_app=i_app, R=R, S=S, D=D, c_smax=c_max)
+    SOC_cn = cn_solver(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D, c_smax=c_max)
     lst_time_cn.append(t_prev)
     lst_cn_solver.append(SOC_cn)
 
     t_prev += dt  # update the time
 t_end = time.time()  # end timer
 print(f"CN solver solved in {t_end - t_start} s")
+
+# -------------------------------------- Poly Solver -------------------------------------------------------------------
+
+# Simulation parameters below
+t_prev = 0  # previous time [s]
+
+# solve for SOC wrt to time
+lst_time_poly, lst_poly_solver = [], []
+t_start = time.time()  # start timer
+SOC_poly = SOC_init
+while SOC_poly < 1:
+    SOC_poly = poly_solver(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D, c_smax=c_max)
+    lst_time_poly.append(t_prev)
+    lst_poly_solver.append(SOC_poly)
+
+    t_prev += dt  # update the time
+t_end = time.time()  # end timer
+print(f"Poly solver solved in {t_end - t_start} s")
 
 # ----------------------------------------------Plots------------------------------------------------------------------
 

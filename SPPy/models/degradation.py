@@ -1,6 +1,6 @@
 import numpy as np
 
-from SPPy.models.single_particle_model import SPModel
+from SPPy.models.battery import SPM
 from SPPy.calc_helpers.constants import Constants
 
 

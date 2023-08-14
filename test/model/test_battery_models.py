@@ -1,7 +1,7 @@
 import unittest
 
 import SPPy
-from SPPy.models import single_particle_model
+from SPPy.models import battery
 
 
 class TestSPModel(unittest.TestCase):
@@ -44,3 +44,21 @@ class TestSPModel(unittest.TestCase):
         m_n = testmodel.m(-1.656, test_cell.elec_n.k, test_cell.elec_n.S, test_cell.elec_n.max_conc,
                           test_cell.elec_n.SOC, test_cell.electrolyte.conc)
         self.assertEqual(3.8782812640647926, testmodel.calc_cell_terminal_voltage(OCP_p, OCP_n, m_p, m_n, R_cell, T=T, I=I))
+
+
+class TestSPMe(unittest.TestCase):
+    def test_flux_method(self):
+        I = -1.65  # m2
+        S_p = 1.1167  # m2
+        S_n = 0.7824  # m2
+        self.assertEqual(-I/(96487*S_n), battery.SPMe.volumetric_molar_fux(I=I, S=S_n, electrode_type='n'))
+        self.assertEqual(I/(96487*S_p), battery.SPMe.volumetric_molar_fux(I=I, S=S_p, electrode_type='p'))
+
+    def test_as(self):
+        epsilon_n = 0.59
+        epsilon_p = 0.49
+        R_n = 1.25e-5
+        R_p = 8.5e-6
+        self.assertEqual(3 * epsilon_n / R_n, battery.SPMe.a_s(epsilon=epsilon_n, R=R_n))
+        self.assertEqual(3 * epsilon_p / R_p, battery.SPMe.a_s(epsilon=epsilon_p, R=R_p))
+

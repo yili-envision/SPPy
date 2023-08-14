@@ -6,7 +6,7 @@ from scipy.optimize import bisect
 from SPPy.calc_helpers.constants import Constants
 from SPPy.calc_helpers import ode_solvers
 from SPPy.warnings_and_exceptions.custom_exceptions import InvalidElectrodeType
-from SPPy.models.single_particle_model import SPModel
+from SPPy.models.battery import SPM
 
 
 class BaseElectrodeConcSolver:
@@ -195,24 +195,29 @@ class CNSolver(BaseElectrodeConcSolver):
         self.K = spatial_grid_points  # number of spatial grid points
         self.c_prev = c_init * np.ones(self.K).reshape(-1, 1)  # column vector used for storing concentrations at t_prev
 
-    def dr(self, R: float):
+    def dr(self, R: float) -> float:
+        """
+        Difference in radial coordinate [m].
+        :param R: electrode particle radius
+        :return:
+        """
         return R / self.K
 
-    def A(self, dt: float, R: float, D: float):
+    def A(self, dt: float, R: float, D: float) -> float:
         """
         Value of the constant A (delta_t * D / delta_r^2)
         :return: Returns the value of the A constant, used for the forming the matrices
         """
         return dt * D / (self.dr(R) ** 2)
 
-    def B(self, dt: float, R: float, D: float):
+    def B(self, dt: float, R: float, D: float) -> float:
         """
         Value of constant B (delta_t * D / (2 * delta_r))
         :return:
         """
         return dt * D / (2 * self.dr(R))
 
-    def array_R(self, R: float):
+    def array_R(self, R: float) -> npt.ArrayLike:
         """
         Array containing the values of r at every grid point.
         :return: Array containing the values of r at every grid point.
@@ -269,7 +274,7 @@ class CNSolver(BaseElectrodeConcSolver):
         :param D: (float) electrode diffusivity [m2/s]
         :return:
         """
-        j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
+        j = SPM.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
         if solver_method == "inverse":
             self.c_prev = np.linalg.inv(self.M(dt=dt, R=R, D=D)) @ self._RHS_array(j=j, dt=dt, R=R, D=D)
         elif solver_method == "TDMA":
@@ -320,7 +325,7 @@ class PolynomialApproximation(BaseElectrodeConcSolver):
         return wrapper
 
     def solve(self, dt: float, t_prev: float, i_app: float, R: float, S: float, D: float):
-        j = SPModel.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
+        j = SPM.molar_flux_electrode(I=i_app, S=S, electrode_type=self.electrode_type)
         self.c_s_avg_prev = ode_solvers.rk4(func=self.func_c_s_avg(j=j, R=R), t_prev=t_prev,
                                              y_prev=self.c_s_avg_prev, step_size=dt)
         if self.type != 'two':
