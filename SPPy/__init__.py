@@ -1,4 +1,4 @@
-from SPPy.battery_components.battery_cell import BatteryCell
+from SPPy.battery_components.battery_cell import BatteryCell, ECMBatteryCell
 # from SPPy.models.battery import SPM
 from SPPy.solvers.battery_solver import SPPySolver
 from SPPy.cycler.cc import CC, CCCV, CCNoFirstRest

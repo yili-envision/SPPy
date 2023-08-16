@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 
-from SPPy.battery_components.parameter_set_manager import ParameterSets
-
 
 @dataclass
-class Electrolyte_:
+class Electrolyte:
     """
     Class for the Electrolyte object and contains the relevant electrolyte parameters.
     """
@@ -30,20 +28,3 @@ class Electrolyte_:
     @ property
     def kappa_eff(self):
         return self.kappa * (self.epsilon ** self.brugg)
-
-
-class Electrolyte(Electrolyte_):
-    """
-    Derived child of Electrolyte_
-    updates the Electrolyte_ attributes from the file.
-    """
-    def __init__(self, file_path):
-        # Read csv and parse for parameters
-        df = ParameterSets.parse_csv(file_path=file_path)
-        conc = df['Conc. [mol m^-3]']
-        L = df['Thickness [m]']
-        kappa = df['Ionic Conductivity [S m^-1]']
-        epsilon = df['Volume Fraction']
-        brugg = df['Bruggerman Coefficient']
-
-        super().__init__(conc=conc, L=L, kappa=kappa, epsilon=epsilon, brugg=brugg)

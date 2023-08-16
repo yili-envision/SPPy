@@ -4,7 +4,9 @@ from dataclasses import dataclass, field
 @dataclass
 class BaseCycler:
     time_elapsed: float = field(default=0.0)  # time elapsed during cycling
-    SOC_LIB: float = field(default=0.0)  # battery cell SOC
+    SOC_LIB: float = field(default=0.0)  # present battery cell SOC
+    SOC_LIB_min: float = field(default=0.0)  # minimum battery cell SOC
+    SOC_LIB_max: float = field(default=1.0)  # maximum battery cell SOC
 
     def get_current(self, step_name: str) -> float:
         """

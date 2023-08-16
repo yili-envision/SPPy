@@ -5,19 +5,19 @@ from SPPy.cycler.base import BaseCycler
 class Discharge(BaseCycler):
     cycle_steps = ['discharge']
 
-    def __init__(self, discharge_current, V_min, SOC_min, SOC_LIB):
-        super().__init__()
+    def __init__(self, discharge_current, V_min, SOC_LIB_min, SOC_LIB):
+        super().__init__(SOC_LIB_min=SOC_LIB_min, SOC_LIB=SOC_LIB)
         self.discharge_current = -discharge_current
         self.V_min = V_min
         self.num_cycles = 1
-        self.SOC_min = SOC_min
-        self.SOC_LIB = SOC_LIB
+        # self.SOC_min = SOC_min
+        # self.SOC_LIB = SOC_LIB
 
 class DischargeRest(BaseCycler):
     cycle_steps = ['discharge', 'rest']
 
-    def __init__(self, discharge_current, rest_time, V_min):
-        super().__init__()
+    def __init__(self, discharge_current, rest_time, V_min, SOC_LIB_min, SOC_LIB, SOC_LIB_max):
+        super().__init__(SOC_LIB=SOC_LIB, SOC_LIB_min=SOC_LIB_min, SOC_LIB_max=SOC_LIB_max)
         self.discharge_current = -discharge_current
         self.rest_time = rest_time
         self.V_min = V_min

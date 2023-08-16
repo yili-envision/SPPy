@@ -15,8 +15,28 @@ class TestPElectrode(unittest.TestCase):
         """
         T = 298.15
         SOC_init = 0.59
-        pelec = electrode.PElectrode(file_path=TEST_POS_ELEC_DIR, SOC_init=SOC_init, T=T, func_OCP=funcs.OCP_ref_p,
-                                     func_dOCPdT=funcs.dOCPdT_p)
+        L_p = 7e-5
+        A_p = 0.0596
+        max_conc_p = 51410
+        epsilon_p = 0.49
+        kappa_p = 3.8
+        S_p = 1.1167
+        R_p = 8.5e-6
+        T_ref_p = 298.15
+        D_ref_p = 1e-14
+        k_ref_p = 6.67e-11
+        Ea_D_p = 2.9e4
+        Ea_R_p = 58000
+        brugg_p = 1.5
+        T_p = 298.15
+        electrode_type = 'p'
+
+        pelec = electrode.PElectrode(L=7e-5, A=A_p, max_conc=max_conc_p, epsilon=epsilon_p, kappa=kappa_p, S=S_p, R=R_p,
+                                     T_ref=T_ref_p, D_ref=D_ref_p, k_ref=k_ref_p, Ea_D=Ea_D_p, Ea_R=Ea_R_p,
+                                     brugg=brugg_p, T=T_p, SOC_init=SOC_init, func_OCP=funcs.OCP_ref_p,
+                                     func_dOCPdT=funcs.dOCPdT_p, alpha=0.5)
+
+
         self.assertEqual(pelec.L, 7.000000e-05)
         self.assertEqual(pelec.A, 5.960000e-02)
         self.assertEqual(pelec.max_conc, 51410)
@@ -31,7 +51,8 @@ class TestPElectrode(unittest.TestCase):
         self.assertEqual(pelec.Ea_R, 58000)
         self.assertEqual(pelec.brugg, 1.5)
         self.assertEqual(pelec.T, 298.15)
-        self.assertEqual(pelec.SOC, SOC_init)
+        self.assertEqual(pelec.SOC_init, SOC_init)
+        self.assertEqual(SOC_init, pelec.SOC)
         self.assertEqual(pelec.electrode_type, 'p')
 
     def test_diffusivity(self):

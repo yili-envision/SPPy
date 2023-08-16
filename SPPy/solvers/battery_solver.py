@@ -86,8 +86,8 @@ class SPPySolver(BaseSolver):
         func_heat_balance = t_model.heat_balance(V=V, I=I)
         return ode_solvers.rk4(func=func_heat_balance, t_prev=t_prev, y_prev=temp_prev, step_size=dt)
 
-    @staticmethod
-    def delta_SOC_cap(Q: float, I: float, dt: float):
+    @classmethod
+    def delta_SOC_cap(cls, Q: float, I: float, dt: float):
         """
         returns the delta SOC capacity [unit-less].
         :param Q: Battery cell capacity
@@ -100,8 +100,14 @@ class SPPySolver(BaseSolver):
     def calc_SOC_cap(self, cap_prev: float, Q: float, I: float, dt: float):
         return cap_prev + self.delta_SOC_cap(Q=Q, I=I, dt=dt)
 
-    @staticmethod
-    def delta_cap(I, dt):
+    @classmethod
+    def delta_cap(cls, I: float, dt: float):
+        """
+        Measures the change in battery cell's capacity [Ahr]
+        :param I: applied current at the current time step [A]
+        :param dt: difference in time in the time step [s]
+        :return: change in battery cell capacity [Ahr]
+        """
         return (1 / 3600) * (np.abs(I) * dt)
 
     def solve_iteration_one_step(self, t_prev: float, dt: float, I: float) -> float:
@@ -224,11 +230,13 @@ class SPPySolver(BaseSolver):
                                          t=cycler.time_elapsed,
                                          I=I,
                                          V=V,
+                                         OCV=self.b_cell.elec_p.OCP - self.b_cell.elec_n.OCP,
                                          x_surf_p=self.b_cell.elec_p.SOC,
                                          x_surf_n=self.b_cell.elec_n.SOC,
                                          cap=cap,
                                          cap_charge=cap_charge,
                                          cap_discharge=cap_discharge,
+                                         SOC_LIB= cycler.SOC_LIB,
                                          battery_cap=self.b_cell.cap,
                                          temp=self.b_cell.T,
                                          R_cell=self.b_cell.R_cell)

@@ -18,11 +18,13 @@ class SolutionInitializer:
     lst_t: list = field(default_factory=lambda: [])  # time [s]
     lst_I: list = field(default_factory=lambda: [])  # applied current [A]
     lst_V: list = field(default_factory=lambda: [])  # cell terminal voltage [V]
+    lst_OCV_LIB: list = field(default_factory=lambda: [])  # OCV of the LIB [V]
     lst_x_surf_p: list = field(default_factory=lambda: [])  # positive electrode surface SOC
     lst_x_surf_n: list = field(default_factory=lambda: [])  # negative electrode surface SOC
-    lst_cap: list = field(default_factory=lambda: [])   # total capacity over cycling [Ahr]
+    lst_cap: list = field(default_factory=lambda: [])   # total capacity spent over cycling [Ahr]
     lst_cap_charge: list = field(default_factory=lambda: [])  # charge capacity [A hr]
     lst_cap_discharge: list = field(default_factory=lambda: [])  # discharge capacity [A hr]
+    lst_SOC_LIB: list = field(default_factory=lambda: [])  # SOC of the LIB battery cell [unitless]
     lst_battery_cap: list = field(default_factory=lambda: [])  # battery cell capacity [A hr]
     lst_temp: list = field(default_factory=lambda: [])  # battery cell temperature [K]
     lst_R_cell: list = field(default_factory=lambda: [])  # battery cell internal resistance [ohms]
@@ -32,18 +34,24 @@ class SolutionInitializer:
     lst_j_i: list = field(default_factory=lambda: [])  # total intercalation flux at the negative electrode [mol/m2/s]
     lst_j_s: list = field(default_factory=lambda: [])  # side reaction molar flux at the negative electrode [mol/m2/s]
 
-    def update(self, cycle_num, cycle_step, t, I, V, x_surf_p, x_surf_n, cap, cap_charge, cap_discharge, battery_cap,
+    def update(self, cycle_num, cycle_step, t, I, V, OCV, x_surf_p, x_surf_n,
+               cap, cap_charge, cap_discharge, SOC_LIB,
+               battery_cap,
                temp, R_cell):
         self.lst_cycle_num.append(cycle_num)
         self.lst_cycle_step.append(cycle_step)
         self.lst_t.append(t)
         self.lst_I.append(I)
         self.lst_V.append(V)
+        self.lst_OCV_LIB.append(OCV)
         self.lst_x_surf_p.append(x_surf_p)
         self.lst_x_surf_n.append(x_surf_n)
+
         self.lst_cap.append(cap)
         self.lst_cap_charge.append(cap_charge)
         self.lst_cap_discharge.append(cap_discharge)
+        self.lst_SOC_LIB.append(SOC_LIB)
+
         self.lst_battery_cap.append(battery_cap)
         self.lst_temp.append(temp)
         self.lst_R_cell.append(R_cell)
@@ -60,11 +68,13 @@ class Solution:
         self.t = np.array(base_solution_instance.lst_t[:len(base_solution_instance.lst_V)])
         self.I = np.array(base_solution_instance.lst_I[:len(base_solution_instance.lst_V)])
         self.V = np.array(base_solution_instance.lst_V)
+        self.OCV_LIB = np.array(base_solution_instance.lst_OCV_LIB)
         self.x_surf_p = np.array(base_solution_instance.lst_x_surf_p)
         self.x_surf_n = np.array(base_solution_instance.lst_x_surf_n)
         self.cap = np.array(base_solution_instance.lst_cap)
         self.cap_charge = base_solution_instance.lst_cap_charge
         self.cap_discharge = base_solution_instance.lst_cap_discharge
+        self.SOC_LIB = base_solution_instance.lst_SOC_LIB
         self.battery_cap = base_solution_instance.lst_battery_cap
         self.T = np.array(base_solution_instance.lst_temp)
         self.R_cell = np.array(base_solution_instance.lst_R_cell)
