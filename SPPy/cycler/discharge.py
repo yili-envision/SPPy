@@ -2,6 +2,7 @@ import numpy as np
 
 from SPPy.cycler.base import BaseCycler
 
+
 class Discharge(BaseCycler):
     def __init__(self, discharge_current: float, V_min: float, SOC_LIB_min: float, SOC_LIB: float):
         super().__init__(SOC_LIB_min=SOC_LIB_min, SOC_LIB=SOC_LIB)
@@ -11,6 +12,7 @@ class Discharge(BaseCycler):
         self.cycle_steps = ['discharge']
         # self.SOC_min = SOC_min
         # self.SOC_LIB = SOC_LIB
+
 
 class DischargeRest(BaseCycler):
     def __init__(self, discharge_current, rest_time, V_min, SOC_LIB_min, SOC_LIB, SOC_LIB_max):
