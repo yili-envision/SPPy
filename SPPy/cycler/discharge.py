@@ -3,30 +3,26 @@ import numpy as np
 from SPPy.cycler.base import BaseCycler
 
 class Discharge(BaseCycler):
-    cycle_steps = ['discharge']
-
-    def __init__(self, discharge_current, V_min, SOC_LIB_min, SOC_LIB):
+    def __init__(self, discharge_current: float, V_min: float, SOC_LIB_min: float, SOC_LIB: float):
         super().__init__(SOC_LIB_min=SOC_LIB_min, SOC_LIB=SOC_LIB)
         self.discharge_current = -discharge_current
         self.V_min = V_min
         self.num_cycles = 1
+        self.cycle_steps = ['discharge']
         # self.SOC_min = SOC_min
         # self.SOC_LIB = SOC_LIB
 
 class DischargeRest(BaseCycler):
-    cycle_steps = ['discharge', 'rest']
-
     def __init__(self, discharge_current, rest_time, V_min, SOC_LIB_min, SOC_LIB, SOC_LIB_max):
         super().__init__(SOC_LIB=SOC_LIB, SOC_LIB_min=SOC_LIB_min, SOC_LIB_max=SOC_LIB_max)
         self.discharge_current = -discharge_current
         self.rest_time = rest_time
         self.V_min = V_min
         self.num_cycles = 1
+        self.cycle_steps = ['discharge', 'rest']
 
 
 class CustomDischarge(BaseCycler):
-    cycle_steps = ['discharge']
-
     def __init__(self, t_array, I_array, V_min):
         # Check for input type.
         if not isinstance(t_array, np.ndarray):
@@ -43,6 +39,7 @@ class CustomDischarge(BaseCycler):
         self.V_min = V_min
         self.charge_current = 0.0
         self.num_cycles = 1
+        self.cycle_steps = ['discharge']
 
     def get_current(self, step_name, t_input):
         """

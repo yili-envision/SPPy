@@ -7,6 +7,11 @@ class BaseCycler:
     SOC_LIB: float = field(default=0.0)  # present battery cell SOC
     SOC_LIB_min: float = field(default=0.0)  # minimum battery cell SOC
     SOC_LIB_max: float = field(default=1.0)  # maximum battery cell SOC
+    charge_current: float = field(default=0.0)  # charge current [A]
+    discharge_current: float = field(default=0.0)  # discharge current [A]
+    rest_time: float = field(default=0.0)  # rest time for the step "rest" [s]
+    num_cycles: int = field(default=0)  # number of cycles
+    cycle_steps: list = field(default_factory=lambda: [])  # list containing the sequence of the steps in a cycle
 
     def get_current(self, step_name: str) -> float:
         """

@@ -7,6 +7,49 @@ from SPPy.calc_helpers.constants import Constants
 from dataclasses import dataclass, field
 
 
+@dataclass
+class ECMSolutionInitializer:
+    lst_t: list = field(default_factory=lambda: [])  # solution time [s]
+    lst_V: list = field(default_factory=lambda: [])  # cell terminal potential [V]
+    lst_T: list = field(default_factory=lambda: [])  # battery cell temperature [K]
+    lst_I: list = field(default_factory=lambda: [])  # applied current [A]
+
+    def update(self, t: float, V: float, T: float, I: float):
+        self.lst_t.append(t)
+        self.lst_V.append(V)
+        self.lst_T.append(T)
+        self.lst_I.append(I)
+
+
+class ECMSolution:
+    def __init__(self, ecm_sol_initializer_instance: ECMSolutionInitializer):
+        self.t = np.array(ecm_sol_initializer_instance.lst_t)
+        self.V = np.array(ecm_sol_initializer_instance.lst_V)
+        self.T = np.array(ecm_sol_initializer_instance.lst_T)
+        self.I = np.array(ecm_sol_initializer_instance.lst_I)
+
+    def comprehensive_plot(self):
+        fig = plt.figure(figsize=(6.4, 6), dpi=300)
+
+        ax1 = fig.add_subplot(311)
+        ax1.plot(self.t, self.V)
+        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('Voltage [V]')
+
+        ax2 = fig.add_subplot(312)
+        ax2.plot(self.t, self.T - 273.15)
+        ax2.set_xlabel('Time [s]')
+        ax2.set_ylabel('Temp. [K]')
+
+        ax3 = fig.add_subplot(313)
+        ax3.plot(self.t, self.I)
+        ax3.set_xlabel('Time [s]')
+        ax3.set_ylabel('Current [A]')
+
+        plt.tight_layout()
+        plt.show()
+
+
 @ dataclass
 class SolutionInitializer:
     """

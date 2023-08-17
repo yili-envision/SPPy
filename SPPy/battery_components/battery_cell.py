@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import Callable
 
+import numpy as np
+
+from SPPy.calc_helpers import constants
 from SPPy.battery_components.parameter_set_manager import ParameterSets
 from SPPy.battery_components import electrolyte, electrode
 
@@ -66,7 +69,7 @@ class BatteryCell(BatteryCellBase):
                                           Ea_R=param_set.Ea_R_p, Ea_D=param_set.Ea_D_p, alpha=param_set.alpha_p,
                                           T_ref=param_set.T_ref_p, brugg=param_set.brugg_p,
                                           func_OCP=param_set.OCP_ref_p_, func_dOCPdT=param_set.dOCPdT_p_,
-                                          SOC_init=SOC_init_p, T=298.15)
+                                          SOC_init=SOC_init_p, T=T)
         obj_elec_n = electrode.NElectrode(L=param_set.L_n, A=param_set.A_n, kappa=param_set.kappa_n,
                                           epsilon=param_set.epsilon_n, S=param_set.S_n, max_conc=param_set.max_conc_n,
                                           R=param_set.R_n, k_ref=param_set.k_ref_n, D_ref=param_set.D_ref_n,
@@ -75,7 +78,7 @@ class BatteryCell(BatteryCellBase):
                                           func_OCP=param_set.OCP_ref_n_, func_dOCPdT=param_set.dOCPdT_n_,
                                           U_s=param_set.U_s, i_s=param_set.i_s, MW_SEI=param_set.MW_SEI,
                                           rho_SEI=param_set.rho_SEI, kappa_SEI=param_set.kappa_SEI,
-                                          SOC_init=SOC_init_n, T=298.15)
+                                          SOC_init=SOC_init_n, T=T)
         obj_electrolyte = electrolyte.Electrolyte(L=param_set.L_es, conc=param_set.conc_es, kappa=param_set.kappa_es,
                                                   epsilon=param_set.epsilon_es, brugg=param_set.brugg_es)
         super().__init__(T_=T, rho=rho, Vol=Vol, C_p=C_p, h=h, A=A, cap=cap, V_max=V_max, V_min=V_min,
@@ -84,12 +87,13 @@ class BatteryCell(BatteryCellBase):
 
 @dataclass
 class ECMBatteryCell:
-    R0: float  # resistance value of R0 [ohm]
-    R1: float  # resistance value of R1 [ohm]
+    R0_ref: float  # resistance value of R0 [ohm]
+    R1_ref: float  # resistance value of R1 [ohm]
     C1: float  # capacitance of capacitor in RC circuit [ohm]
-    SOC_init: float  # initial SOC
+    T_ref: float  # reference temperature for R0_ref and R1_ref
+    Ea_R0: float  # activation energy for R0 [J/mol]
+    Ea_R1: float  # activation energy for R1 [J/mol]
 
-    T_init: float  # initial battery cell temperature, K
     rho: float  # battery density (mostly for thermal modelling), kg/m3
     Vol: float  # battery cell volume, m3
     C_p: float  # specific heat capacity, J / (K kg)
@@ -99,6 +103,10 @@ class ECMBatteryCell:
     V_max: float  # maximum potential
     V_min: float  # minimum potential
 
+    SOC_init: float  # initial SOC
+    T_init: float  # initial battery cell temperature, K
+
+    func_eta: Callable  # func for the Columbic efficiency as a func of SOC and temp
     func_OCV: Callable  # func which outputs the battery OCV from its SOC
     func_dOCVdT: Callable  # function which outputs the change of OCV with respect to temperature from its SOC
 
@@ -129,3 +137,23 @@ class ECMBatteryCell:
     @SOC.setter
     def SOC(self, SOC_new: float):
         self.SOC_ = SOC_new
+
+    @property
+    def R0(self):
+        return self.R0_ref * np.exp(-1 * self.Ea_R0 / constants.Constants.R * (1 / self.T - 1 / self.T_ref))
+
+    @property
+    def R1(self):
+        return self.R0_ref * np.exp(-1 * self.Ea_R1 / constants.Constants.R * (1 / self.T - 1 / self.T_ref))
+
+    @property
+    def dOCPdT(self):
+        return self.func_dOCVdT(self.SOC)
+
+    @property
+    def OCV(self):
+        return self.func_OCV(self.SOC) + self.dOCPdT * (self.T - self.T_ref)
+
+    @property
+    def eta(self):
+        return self.func_eta(self.SOC, self.T)
