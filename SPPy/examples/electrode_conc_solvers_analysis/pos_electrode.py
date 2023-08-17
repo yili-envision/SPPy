@@ -24,12 +24,12 @@ dt = 0.1  # time increment [s]
 t_prev = 0  # previous time [s]
 
 # solve for SOC wrt to time
-lst_time_eigen, lst_eigen_SOC = [], []
+lst_time_eigen_p, lst_eigen_SOC_p = [], []
 t_start = time.time()  # start timer
 while SOC_eigen < 1:
     SOC_eigen = eigen_solver(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D, c_smax=c_max)
-    lst_time_eigen.append(t_prev)
-    lst_eigen_SOC.append(SOC_eigen)
+    lst_time_eigen_p.append(t_prev)
+    lst_eigen_SOC_p.append(SOC_eigen)
 
     t_prev += dt  # update the time
 t_end = time.time()  # end timer
@@ -41,13 +41,13 @@ print(f"eigen solver solved in {t_end - t_start} s")
 t_prev = 0  # previous time [s]
 
 # solve for SOC wrt to time
-lst_time_cn, lst_cn_solver = [], []
+lst_time_cn_p, lst_cn_solver_p = [], []
 t_start = time.time()  # start timer
 SOC_cn = SOC_init
 while SOC_cn < 1:
     SOC_cn = cn_solver(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D, c_smax=c_max)
-    lst_time_cn.append(t_prev)
-    lst_cn_solver.append(SOC_cn)
+    lst_time_cn_p.append(t_prev)
+    lst_cn_solver_p.append(SOC_cn)
 
     t_prev += dt  # update the time
 t_end = time.time()  # end timer
@@ -59,13 +59,13 @@ print(f"CN solver solved in {t_end - t_start} s")
 t_prev = 0  # previous time [s]
 
 # solve for SOC wrt to time
-lst_time_poly, lst_poly_solver = [], []
+lst_time_poly_p, lst_poly_solver_p = [], []
 t_start = time.time()  # start timer
 SOC_poly = SOC_init
 while SOC_poly < 1:
     SOC_poly = poly_solver(dt=dt, t_prev=t_prev, i_app=i_app, R=R, S=S, D_s=D, c_smax=c_max)
-    lst_time_poly.append(t_prev)
-    lst_poly_solver.append(SOC_poly)
+    lst_time_poly_p.append(t_prev)
+    lst_poly_solver_p.append(SOC_poly)
 
     t_prev += dt  # update the time
 t_end = time.time()  # end timer
@@ -73,8 +73,9 @@ print(f"Poly solver solved in {t_end - t_start} s")
 
 # ----------------------------------------------Plots------------------------------------------------------------------
 
-plt.plot(lst_time_eigen, lst_eigen_SOC, label="Eigen Expansion Method")
-plt.plot(lst_time_cn, lst_cn_solver, label="Crank-Nicolson Scheme")
+plt.plot(lst_time_eigen_p, lst_eigen_SOC_p, label="Eigen Expansion Method")
+plt.plot(lst_time_cn_p, lst_cn_solver_p, label="Crank-Nicolson Scheme")
+plt.plot(lst_time_poly_p, lst_poly_solver_p, label="Polynomial Approximation")
 plt.xlabel("Time [s]")
 plt.ylabel("Positive Electrode SOC")
 plt.legend()

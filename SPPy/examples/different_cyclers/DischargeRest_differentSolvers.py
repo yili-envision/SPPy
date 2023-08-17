@@ -46,5 +46,4 @@ ax1.set_ylabel('Cell Terminal Voltage [V]')
 # ax1.legend()
 
 plt.tight_layout()
-plt.savefig('G:\My Drive\Writings\Electrochemical_models\SPM\DischargeRest_differentSolvers.png')
 plt.show()

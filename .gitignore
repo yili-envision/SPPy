@@ -241,5 +241,9 @@ cython_debug/
 # Personal Files
 data/Calce_PL
 analysis/
+SPPy/examples/isothermal/save_plots.py
+SPPy/examples/different_cyclers/save_results.py
+SPPy/examples/overpotential
+SPPy/examples/electrode_conc_solvers_analysis/save_plots.py
 
 # Example Files

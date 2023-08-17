@@ -263,13 +263,16 @@ class Solution:
     def dis_cap_array(self):
         return np.array([self.calc_discharge_cap(cycle_no_) for cycle_no_ in np.unique(self.cycle_num)])
 
-    def comprehensive_plot(self):
+    def comprehensive_plot(self, save_dir: str = None):
         mpl.rcParams['lines.linewidth'] = 3
-        plt.rc('axes', titlesize=15)
-        plt.rc('axes', labelsize=15)
-        num_rows = 2
-        num_cols = 3
-        fig = plt.figure(figsize=(6.4*3, 10.8))
+        plt.rc('axes', titlesize=20)
+        plt.rc('axes', labelsize=20)
+        plt.rcParams['font.size'] = 15
+        # plt.rcParams['font.weight'] = 'bold'
+
+        num_rows = 3
+        num_cols = 2
+        fig = plt.figure(figsize=(6.4*2, 4.8*3), dpi=300)
 
         ax1 = fig.add_subplot(num_rows, num_cols, 1)
         ax1.plot(self.t, self.V)
@@ -344,6 +347,10 @@ class Solution:
         # ax8.set_title('Cycling Performance')
 
         plt.tight_layout()
+
+        if save_dir is not None:
+            plt.savefig(save_dir)
+
         plt.show()
 
     def plot_SEI(self):
