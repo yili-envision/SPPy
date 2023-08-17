@@ -73,10 +73,6 @@ while SOC_poly > 0:
 t_end = time.time()  # end timer
 print(f"Poly solver solved in {t_end - t_start} s")
 
-# --------------------------------------------save results-------------------------------------------------------------
-
-with open("neg_electrode_solver_results") as
-
 
 # ----------------------------------------------Plots------------------------------------------------------------------
 
