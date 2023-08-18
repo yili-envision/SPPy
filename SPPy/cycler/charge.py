@@ -11,3 +11,12 @@ class Charge(BaseCycler):
         self.SOC_max = SOC_max
         self.SOC_LIB=SOC_LIB
         self.cycle_steps = ['charge']
+
+
+class ChargeRest(BaseCycler):
+    def __init__(self, charge_current: float, V_max:float, rest_time: float, SOC_max:float=1, SOC_LIB:float=0):
+        super().__init__(charge_current=charge_current, SOC_LIB_max=SOC_max, SOC_LIB=SOC_LIB)
+        self.cycle_steps = ['charge', 'rest']
+        self.rest_time = rest_time
+        self.num_cycles = 1
+        self.V_max = V_max

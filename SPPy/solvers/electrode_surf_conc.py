@@ -303,7 +303,7 @@ class PolynomialApproximation(BaseElectrodeConcSolver):
     Journal of The Electrochemical Society, 163(7), A1192–A1205.
     https://doi.org/10.1149/2.0291607JES/XML
     """
-    def __init__(self, c_init: float, electrode_type: str, type: str = 'two'):
+    def __init__(self, c_init: float, electrode_type: str, type: str = 'higher'):
         super().__init__(electrode_type=electrode_type)
         self.c_s_avg_prev = c_init
         self.c_surf = c_init
