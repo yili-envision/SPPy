@@ -25,7 +25,7 @@ class Electrode:
     T_ref: float  # Reference Temperature [K]
     D_ref: float  # Reference Diffusivity [m2/s]
     k_ref: float  # Reference Rate Constant [m2.5 / (mol0.5 s)
-    Ea_D: float # Activation Energy of Diffusion [J / mol]
+    Ea_D: float  # Activation Energy of Diffusion [J / mol]
     Ea_R: float  # Activation Energy of Reaction [J / mol]
     alpha: float  # Anodic Transfer Coefficient
     brugg: float  # Bruggerman Coefficient

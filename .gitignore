@@ -247,5 +247,6 @@ SPPy/examples/overpotential
 SPPy/examples/electrode_conc_solvers_analysis/save_plots.py
 parameter_sets/for_sensitivity_analysis
 SPPy/examples/parameter_sensitivity_analysis
+parameter_sets/Tesla
 
 # Example Files

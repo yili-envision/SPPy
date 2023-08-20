@@ -263,12 +263,64 @@ class Solution:
     def dis_cap_array(self):
         return np.array([self.calc_discharge_cap(cycle_no_) for cycle_no_ in np.unique(self.cycle_num)])
 
-    def comprehensive_plot(self, save_dir: str = None):
+    def set_matplotlib_settings(self):
         mpl.rcParams['lines.linewidth'] = 3
         plt.rc('axes', titlesize=20)
         plt.rc('axes', labelsize=20)
         plt.rcParams['font.size'] = 15
-        # plt.rcParams['font.weight'] = 'bold'
+
+    def comprehensive_isothermal_plot(self, save_dir: str = None):
+        self.set_matplotlib_settings()
+
+        num_rows = 2
+        num_cols = 2
+        fig = plt.figure(figsize=(6.4*2, 4.8*2), dpi=300)
+
+        ax1 = fig.add_subplot(num_rows, num_cols, 1)
+        ax1.plot(self.t, self.V)
+        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('V [V]')
+        ax1.set_title('V vs. Time')
+
+        ax2 = fig.add_subplot(num_rows, num_cols, 2)
+        if len(np.unique(self.cycle_num)) == 1:
+            ax2.plot(self.cap, self.V)
+        else:
+            # omit cycle 0
+            first_cycle_no = np.unique(self.cycle_num)[1]
+            last_cycle_no = np.unique(self.cycle_num)[-1]
+            cap_list_first = self.filter_cap(first_cycle_no)
+            cap_list_last = self.filter_cap(last_cycle_no)
+            V_list_first = self.filter_V(first_cycle_no)
+            V_list_last = self.filter_V(last_cycle_no)
+            ax2.plot(cap_list_first, V_list_first, label = f"cycle {first_cycle_no}")
+            ax2.plot(cap_list_last, V_list_last, label = f"cycle {last_cycle_no}")
+        ax2.set_xlabel('Capacity [Ahr]')
+        ax2.set_ylabel('V [V]')
+        ax2.set_title('V vs. Capacity')
+        ax2.legend()
+
+        ax3 = fig.add_subplot(num_rows, num_cols, 3)
+        ax3.plot(self.t, self.x_surf_p)
+        ax3.set_xlabel('Time [s]')
+        ax3.set_ylabel('SOC')
+        ax3.set_title('Positive Electrode SOC')
+
+        ax4 = fig.add_subplot(num_rows, num_cols, 4)
+        ax4.plot(self.t, self.x_surf_n)
+        ax4.set_xlabel('Time [s]')
+        ax4.set_ylabel('SOC')
+        ax4.set_title('Negative Electrode SOC')
+
+        plt.tight_layout()
+
+        if save_dir is not None:
+            plt.savefig(save_dir)
+
+        plt.show()
+
+    def comprehensive_plot(self, save_dir: str = None):
+        self.set_matplotlib_settings()
 
         num_rows = 3
         num_cols = 2

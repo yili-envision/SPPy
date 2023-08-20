@@ -3,8 +3,10 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 
+
 def euler(func, t_prev, y_prev, step_size):
     return y_prev + func(y_prev, t_prev) * step_size
+
 
 def rk4(func: Callable, t_prev: float, y_prev: float, step_size: float):
     """

@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
+
 
 
 @dataclass
-class BaseCycler:
+class BaseCycler(ABC):
     time_elapsed: float = field(default=0.0)  # time elapsed during cycling
     SOC_LIB: float = field(default=0.0)  # present battery cell SOC
     SOC_LIB_min: float = field(default=0.0)  # minimum battery cell SOC
@@ -13,10 +15,12 @@ class BaseCycler:
     num_cycles: int = field(default=0)  # number of cycles
     cycle_steps: list = field(default_factory=lambda: [])  # list containing the sequence of the steps in a cycle
 
-    def get_current(self, step_name: str) -> float:
+    @abstractmethod
+    def get_current(self, step_name: str, t: float) -> float:
         """
         Returns the current for a particular cycling step. It is only valid for constant current situations.
         :param step_name: (string) The cycling step name.
+        :param t: (float) the time value at the current time step [s]
         :return: (double) The current value.
         """
         if step_name == "rest":

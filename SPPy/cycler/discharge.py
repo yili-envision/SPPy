@@ -13,6 +13,9 @@ class Discharge(BaseCycler):
         # self.SOC_min = SOC_min
         # self.SOC_LIB = SOC_LIB
 
+    def get_current(self, step: str, t: float = 0.0) -> float:
+        return self.discharge_current
+
 
 class DischargeRest(BaseCycler):
     def __init__(self, discharge_current, rest_time, V_min, SOC_LIB_min, SOC_LIB, SOC_LIB_max):
@@ -22,6 +25,12 @@ class DischargeRest(BaseCycler):
         self.V_min = V_min
         self.num_cycles = 1
         self.cycle_steps = ['discharge', 'rest']
+
+    def get_current(self, step_name: str, t: float = 0.0) -> float:
+        if step_name == 'discharge':
+            return self.discharge_current
+        elif step_name == 'rest':
+            return 0
 
 
 class CustomDischarge(BaseCycler):
@@ -43,7 +52,7 @@ class CustomDischarge(BaseCycler):
         self.num_cycles = 1
         self.cycle_steps = ['discharge']
 
-    def get_current(self, step_name, t_input):
+    def get_current(self, step_name: str, t_input: float) -> float:
         """
         This method returns the current at the given time. This method overwrites the Base charger's respective method.
         :param step_name: The step name.

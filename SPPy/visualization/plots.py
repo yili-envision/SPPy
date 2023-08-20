@@ -78,9 +78,6 @@ class Plots:
     def comprehensive_plot(self, save_fig:str = None):
         self.set_matplotlib_settings()
         mpl.rcParams['axes.prop_cycle'] = mpl.cycler(color='bgrcmyk') + mpl.cycler(linestyle=['-', '--', '-.',':', '-', '--', '-.'])
-        # mpl.rcParams['lines.linewidth'] = 3
-        # plt.rc('axes', titlesize= 15)
-        # plt.rc('axes', labelsize= 15)
 
         fig = plt.figure(figsize=(6.4*2, 4.8*3), dpi=300)
         num_col = 2
