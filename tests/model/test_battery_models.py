@@ -14,7 +14,7 @@ class TestSPModel(unittest.TestCase):
         SOC_init_n = 0.7
         test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
 
-        testmodel = single_particle_model.SPModel()
+        testmodel = battery.SPM()
         self.assertEqual(-0.2893183331034342, testmodel.m(-1.656, test_cell.elec_p.k, test_cell.elec_p.S, test_cell.elec_p.max_conc, test_cell.elec_p.SOC, test_cell.electrolyte.conc))
         self.assertEqual(-2.7018597575301726, testmodel.m(-1.656, test_cell.elec_n.k, test_cell.elec_n.S, test_cell.elec_n.max_conc, test_cell.elec_n.SOC, test_cell.electrolyte.conc))
 
@@ -26,7 +26,7 @@ class TestSPModel(unittest.TestCase):
         I = -1.656
         test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
 
-        testmodel = single_particle_model.SPModel()
+        testmodel = battery.SPM()
         OCP_p = test_cell.elec_p.OCP
         OCP_n = test_cell.elec_n.OCP
         m_p = testmodel.m(-1.656, test_cell.elec_p.k, test_cell.elec_p.S, test_cell.elec_p.max_conc, test_cell.elec_p.SOC,

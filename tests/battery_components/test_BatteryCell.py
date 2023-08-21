@@ -90,8 +90,11 @@ class TestBatteryCell(unittest.TestCase):
         self.assertEqual(test_cell.T_amb, orig_T)
 
 
-class TestECMBatteryCell:
-    test_cell = SPPy.ECMBatteryCell(R0=0.225, R1=0.001, C1=0.03, T_=298.15, rho=1626, Vol=3.38e-5, C_p=750, h=1, A=0.085,
+class TestECMBatteryCell(unittest.TestCase):
+    test_cell = SPPy.ECMBatteryCell(R0_ref=0.225, R1_ref=0.001, C1=0.03, T_ref=298.15, Ea_R1=400, Ea_R0=400,
+                                    rho=1626, Vol=3.38e-5, C_p=750, h=1, A=0.085,
+                                    func_eta=None, func_OCV=None, func_dOCVdT=None,
+                                    SOC_init=0.1, T_init=298.15,
                                     cap=1.65, V_max=4.2, V_min=2.5)
 
     def test_battery_cell_parameters(self):
