@@ -58,7 +58,6 @@ Example usage are included in the SPPy/examples folder.
 - ```examples``` - the example usage under various simulation conditions.
 - ```battery_components``` - classes for reading and storing battery cell component (e.g., electrode, electrolyte) parameters 
 - ```models``` - classes with methods pertaining to battery, thermal, and degradation models
-- ```models``` - classes with methods pertaining to battery, thermal, and degradation models
 - ```solvers``` - numerical and simulation solvers
 - ```visualization``` - visualization related classes
 
