@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -176,11 +178,6 @@ class Solution:
         ax.set_xlabel(xlabel= x_label)
         ax.set_ylabel(ylabel=y_label)
         plt.show()
-    def plot_tV(self):
-        self.single_plot(self.t, self.V, x_label='t [s]', y_label='V [V]')
-
-    def plot_capV(self):
-        self.single_plot(self.cap, self.V, x_label= 'capacity [Ahr]', y_label='V [V]')
 
     def filter_cycle_nums(self):
         return np.unique(self.cycle_num)
@@ -247,18 +244,24 @@ class Solution:
     def calc_battery_cap_array(self):
         return np.array([self.filter_battery_cap(i) for i in self.filter_cycle_nums()])
 
+    # def plot_tV(self):
+    #     num_rows = 1
+    #     num_cols = 1
+    #     fig = plt.figure()
+    #
+    #     ax1 = fig.add_subplot(num_rows, num_cols, 1)
+    #     ax1.plot(self.t, self.V)
+    #     ax1.set_xlabel('Time [s]')
+    #     ax1.set_ylabel('V [V]')
+    #     ax1.set_title('V vs. Time')
+    #
+    #     plt.show()
+
     def plot_tV(self):
-        num_rows = 1
-        num_cols = 1
-        fig = plt.figure()
+        self.single_plot(self.t, self.V, x_label='t [s]', y_label='V [V]')
 
-        ax1 = fig.add_subplot(num_rows, num_cols, 1)
-        ax1.plot(self.t, self.V)
-        ax1.set_xlabel('Time [s]')
-        ax1.set_ylabel('V [V]')
-        ax1.set_title('V vs. Time')
-
-        plt.show()
+    def plot_capV(self):
+        self.single_plot(self.cap, self.V, x_label= 'capacity [Ahr]', y_label='V [V]')
 
     def dis_cap_array(self):
         return np.array([self.calc_discharge_cap(cycle_no_) for cycle_no_ in np.unique(self.cycle_num)])
@@ -425,3 +428,7 @@ class Solution:
 
         plt.tight_layout()
         plt.show()
+
+    def save_instance(self, file_name: str):
+        with open(file_name, "wb") as output_file:
+            pickle.dump(self, output_file, pickle.HIGHEST_PROTOCOL)

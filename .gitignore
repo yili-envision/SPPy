@@ -239,15 +239,20 @@ dmypy.json
 cython_debug/
 
 # Personal Files
+data
 data/Calce_PL
 analysis/
+
+parameter_sets/for_sensitivity_analysis
+parameter_sets/Tesla
+parameter_sets/Calce_OCV
+
 SPPy/examples/isothermal/save_plots.py
 SPPy/examples/different_cyclers/save_results.py
 SPPy/examples/overpotential
 SPPy/examples/electrode_conc_solvers_analysis/save_plots.py
-parameter_sets/for_sensitivity_analysis
+SPPy/examples/parameter_estimations
 SPPy/examples/parameter_sensitivity_analysis
-parameter_sets/Tesla
-data
+SPPy/examples/custom_cycler/DST_25C.csv
+SPPy/examples/custom_cycler/Calce_DST.py
 
-# Example Files

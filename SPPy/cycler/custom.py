@@ -6,14 +6,15 @@ from SPPy.cycler.base import BaseCycler
 
 
 class CustomCycler(BaseCycler):
-    def __init__(self, t_array: npt.ArrayLike, I_array: npt.ArrayLike, SOC_LIB: float=0.0):
+    def __init__(self, t_array: npt.ArrayLike, I_array: npt.ArrayLike,
+                 SOC_LIB: float=1.0, SOC_LIB_min: float=0.0, SOC_LIB_max: float=1.0):
         """
         CustomCycler constructor.
         :param t_array: numpy array containing the time values in sequence [s].
         :param I_array: numpy array containing the current values.
         :param SOC_LIB:
         """
-        super().__init__(SOC_LIB=SOC_LIB)
+        super().__init__(SOC_LIB=SOC_LIB, SOC_LIB_min=SOC_LIB_min, SOC_LIB_max=SOC_LIB_max)
         # check is t_array and I_array are numpy arrays.
         if (not isinstance(t_array, np.ndarray)) and (not isinstance(I_array, np.ndarray)):
             raise TypeError("t_array and I_array needs to be a numpy array.")
@@ -24,6 +25,7 @@ class CustomCycler(BaseCycler):
 
         self.t_array = t_array
         self.I_array = I_array
+        self.cycle_steps = ['custom']
 
     @property
     def t_max(self):
@@ -33,7 +35,7 @@ class CustomCycler(BaseCycler):
         """
         return self.t_array[-1]
 
-    def get_current(self, t: float):
+    def get_current(self, step_name:str, t: float):
         """
         Returns the current value from the inputted time value. This current value is interpolation based on the
         current value at the previous time step.
@@ -52,3 +54,6 @@ class CustomCycler(BaseCycler):
         plt.xlabel('Time [s]')
         plt.ylabel('I [A]')
         plt.show()
+
+    def reset(self) -> None:
+        self.time_elapsed = 0.0

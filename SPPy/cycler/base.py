@@ -32,5 +32,10 @@ class BaseCycler(ABC):
         else:
             raise TypeError("Not a valid step name")
 
-    def reset_time_elapsed(self):
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        Resets the cycler instance.
+        :return:
+        """
         self.time_elapsed = 0.0

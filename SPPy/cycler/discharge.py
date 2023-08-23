@@ -10,11 +10,14 @@ class Discharge(BaseCycler):
         self.V_min = V_min
         self.num_cycles = 1
         self.cycle_steps = ['discharge']
-        # self.SOC_min = SOC_min
-        # self.SOC_LIB = SOC_LIB
+        self.SOC_LIB_init = SOC_LIB
 
     def get_current(self, step: str, t: float = 0.0) -> float:
         return self.discharge_current
+
+    def reset(self) -> None:
+        self.time_elapsed = 0
+        self.SOC_LIB = self.SOC_LIB_init
 
 
 class DischargeRest(BaseCycler):
@@ -25,12 +28,17 @@ class DischargeRest(BaseCycler):
         self.V_min = V_min
         self.num_cycles = 1
         self.cycle_steps = ['discharge', 'rest']
+        self.SOC_LIB_init = SOC_LIB
 
     def get_current(self, step_name: str, t: float = 0.0) -> float:
         if step_name == 'discharge':
             return self.discharge_current
         elif step_name == 'rest':
             return 0
+
+    def reset(self) -> None:
+        self.time_elapsed = 0.0
+        self.SOC_LIB = self.SOC_LIB_init
 
 
 class CustomDischarge(BaseCycler):

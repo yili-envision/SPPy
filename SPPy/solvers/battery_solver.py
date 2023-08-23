@@ -268,7 +268,7 @@ class SPPySolver(BaseSolver):
             t_curr += t_increment
             dt = t_curr - t_prev
 
-            I = custom_cycler_instance.get_current(t=t_curr)
+            I = custom_cycler_instance.get_current(step_name=custom_cycler_instance.cycle_steps[0],t=t_curr)
 
             # All simulations parameters and battery cell attributes updates are done the in the code block
             # below.
@@ -293,7 +293,10 @@ class SPPySolver(BaseSolver):
                 custom_cycler_instance.SOC_LIB += delta_SOC_cap
 
             if verbose == True:
-                print(t_prev, t_curr, dt, I, V)
+                print("time elapsed [s]: ", custom_cycler_instance.time_elapsed, ", cycle_no: ", 1,
+                      'step: ', custom_cycler_instance.cycle_steps[0], "current [A]", I,
+                      ", terminal voltage [V]: ", V, ", SOC_LIB: ", custom_cycler_instance.SOC_LIB,
+                      "cap: ", cap)
 
             # update time
             t_prev = t_curr
@@ -305,11 +308,13 @@ class SPPySolver(BaseSolver):
                                  t=custom_cycler_instance.time_elapsed,
                                  I=I,
                                  V=V,
+                                 OCV=self.b_cell.elec_p.OCP - self.b_cell.elec_n.OCP,
                                  x_surf_p=self.b_cell.elec_p.SOC,
                                  x_surf_n=self.b_cell.elec_n.SOC,
                                  cap=cap,
                                  cap_charge=cap_charge,
                                  cap_discharge=cap_discharge,
+                                 SOC_LIB=custom_cycler_instance.SOC_LIB,
                                  battery_cap=self.b_cell.cap,
                                  temp=self.b_cell.T,
                                  R_cell=self.b_cell.R_cell)
