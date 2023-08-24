@@ -1,6 +1,7 @@
 import pickle
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -79,10 +80,10 @@ class SolutionInitializer:
     lst_j_i: list = field(default_factory=lambda: [])  # total intercalation flux at the negative electrode [mol/m2/s]
     lst_j_s: list = field(default_factory=lambda: [])  # side reaction molar flux at the negative electrode [mol/m2/s]
 
-    def update(self, cycle_num, cycle_step, t, I, V, OCV, x_surf_p, x_surf_n,
-               cap, cap_charge, cap_discharge, SOC_LIB,
-               battery_cap,
-               temp, R_cell):
+    def update(self, cycle_num=0, cycle_step=0, t=0, I=0, V=0, OCV=0, x_surf_p=0, x_surf_n=0,
+               cap=0, cap_charge=0, cap_discharge=0, SOC_LIB=0,
+               battery_cap=0,
+               temp=0, R_cell=0):
         self.lst_cycle_num.append(cycle_num)
         self.lst_cycle_step.append(cycle_step)
         self.lst_t.append(t)
@@ -101,9 +102,17 @@ class SolutionInitializer:
         self.lst_temp.append(temp)
         self.lst_R_cell.append(R_cell)
 
+    def update_via_lst(self, lst_cycle_num: list, lst_cycle_step: list, lst_t: list, lst_I: list, lst_V: list):
+        self.lst_cycle_num = lst_cycle_num
+        self.lst_cycle_step = lst_cycle_step
+        self.lst_t = lst_t
+        self.lst_I = lst_I
+        self.lst_V = lst_V
+
 
 class Solution:
-    def __init__(self, base_solution_instance: SolutionInitializer, name=None, save_csv_dir=None):
+    def __init__(self, base_solution_instance: SolutionInitializer = SolutionInitializer(),
+                 name=None, save_csv_dir=None):
         if not isinstance(base_solution_instance, SolutionInitializer):
             raise TypeError("base_solution_instance needs to be a SolutionInitializer object.")
 
@@ -140,6 +149,22 @@ class Solution:
         """
         total_cycles = len(np.unique(self.cycle_num))
         return {'cycle_no': total_cycles}
+
+    @classmethod
+    def upload_exp_data(cls, file_name: str):
+        sol_init = SolutionInitializer()
+        df = pd.read_csv(file_name)
+        array_t = df['t [s]'].to_numpy()
+        array_t = array_t - array_t[0]
+        lst_t = list(array_t)
+        lst_V = df['V [V]'].tolist()
+        lst_I = df['I [A]'].tolist()
+        lst_cycle_num = df['Cycle_Index'].tolist()
+        lst_step_num = df['Step_Index'].tolist()
+        sol_init.update_via_lst(lst_cycle_num=lst_cycle_num, lst_cycle_step=lst_step_num, lst_t=lst_t, lst_I=lst_I,
+                                lst_V=lst_V)
+        return cls(base_solution_instance=sol_init)
+
 
     def create_df(self):
         df = pd.DataFrame({
@@ -243,19 +268,6 @@ class Solution:
 
     def calc_battery_cap_array(self):
         return np.array([self.filter_battery_cap(i) for i in self.filter_cycle_nums()])
-
-    # def plot_tV(self):
-    #     num_rows = 1
-    #     num_cols = 1
-    #     fig = plt.figure()
-    #
-    #     ax1 = fig.add_subplot(num_rows, num_cols, 1)
-    #     ax1.plot(self.t, self.V)
-    #     ax1.set_xlabel('Time [s]')
-    #     ax1.set_ylabel('V [V]')
-    #     ax1.set_title('V vs. Time')
-    #
-    #     plt.show()
 
     def plot_tV(self):
         self.single_plot(self.t, self.V, x_label='t [s]', y_label='V [V]')

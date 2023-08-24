@@ -1,0 +1,10 @@
+Data References:
+
+1. Fangdan Zheng, Yinjiao Xing, Jiuchun Jiang, Bingxiang Sun, Jonghoon Kim, Michael Pecht,
+Influence of different open circuit voltage tests on state of charge online estimation for lithium-ion batteries,
+Applied Energy,
+Volume 183,
+2016,
+Pages 513-525,
+ISSN 0306-2619,
+https://doi.org/10.1016/j.apenergy.2016.09.010.
