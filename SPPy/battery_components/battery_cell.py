@@ -84,6 +84,12 @@ class BatteryCell(BatteryCellBase):
         super().__init__(T_=T, rho=rho, Vol=Vol, C_p=C_p, h=h, A=A, cap=cap, V_max=V_max, V_min=V_min,
                          elec_p=obj_elec_p, elec_n=obj_elec_n, electrolyte=obj_electrolyte)
 
+    def __repr__(self):
+        return repr(self.elec_n)
+
+    def __str__(self):
+        return str(self.elec_n)
+
 
 @dataclass
 class ECMBatteryCell:

@@ -5,5 +5,6 @@ from SPPy.cycler.cc import CC, CCCV, CCNoFirstRest, DischargeRestCharge, Dischar
 from SPPy.cycler.charge import Charge, ChargeRest
 from SPPy.cycler.discharge import Discharge, DischargeRest, CustomDischarge
 from SPPy.cycler.custom import CustomCycler
+from SPPy.solution import Solution
 
 from SPPy.visualization.plots import Plots

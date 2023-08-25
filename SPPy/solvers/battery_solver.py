@@ -27,7 +27,7 @@ class SPPySolver(BaseSolver):
     """
 
     def __init__(self, b_cell, isothermal: bool = True, degradation: bool = False, N: int = 5,
-                 electrode_SOC_solver: str = 'eigen'):
+                 electrode_SOC_solver: str = 'eigen', **electrode_SOC_solver_params):
         super().__init__(b_cell=b_cell, isothermal=isothermal, degradation=degradation,
                          electrode_SOC_solver=electrode_SOC_solver)
         self.N = N
@@ -45,11 +45,15 @@ class SPPySolver(BaseSolver):
             self.SOC_solver_n = CNSolver(c_init=self.b_cell.elec_n.max_conc * self.b_cell.elec_n.SOC,
                                          electrode_type='n')
         elif self.electrode_SOC_solver == "poly":
+            if electrode_SOC_solver_params:
+                type = electrode_SOC_solver_params['type']
+            else:
+                type = 'higher'
             self.SOC_solver_p = PolynomialApproximation(
                 c_init=self.b_cell.elec_p.max_conc * self.b_cell.elec_p.SOC_init,
-                electrode_type='p')
+                electrode_type='p', type=type)
             self.SOC_solver_n = PolynomialApproximation(c_init=self.b_cell.elec_n.max_conc * self.b_cell.elec_n.SOC,
-                                                        electrode_type='n')
+                                                        electrode_type='n', type=type)
 
         self.t_model = Lumped(b_cell=self.b_cell)  # thermal model object
 

@@ -18,17 +18,17 @@ V_exp = sol_exp.V[np.argwhere(sol_exp.cycle_step > 3)].flatten()
 I_exp = sol_exp.I[np.argwhere(sol_exp.cycle_step > 3)].flatten()
 
 # Modelling parameters
-SOC_n_min=0.01073305
-SOC_n_max=0.75
-SOC_p_min=0.41553058
-SOC_p_max=0.90207103
+SOC_n_min = 0.01098666
+SOC_n_max = 0.7953467
+SOC_p_min = 0.43144714
+SOC_p_max = 0.90469321
 
 SOC_init_p, SOC_init_n = SOC_p_min, SOC_n_max
 T = 298.15  # in K
 
 # Setup cycler and battery cell
 cycler = SPPy.CustomCycler(t_array=t_exp, I_array=I_exp, SOC_LIB=1.0)
-cycler.plot()
+# cycler.plot()
 cell = SPPy.BatteryCell(parameter_set_name='Calce_NMC_18650', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
 solver = SPPy.SPPySolver(b_cell=cell, N=5, isothermal=True, degradation=False, electrode_SOC_solver='poly')
 

@@ -151,17 +151,19 @@ class Solution:
         return {'cycle_no': total_cycles}
 
     @classmethod
-    def upload_exp_data(cls, file_name: str):
+    def upload_exp_data(cls, filename: str, step_num: int = None):
         sol_init = SolutionInitializer()
-        df = pd.read_csv(file_name)
+        df = pd.read_csv(filename)
+        if step_num is not None:
+            df = df[df['Step_Index'] == step_num]
         array_t = df['t [s]'].to_numpy()
         array_t = array_t - array_t[0]
         lst_t = list(array_t)
         lst_V = df['V [V]'].tolist()
         lst_I = df['I [A]'].tolist()
         lst_cycle_num = df['Cycle_Index'].tolist()
-        lst_step_num = df['Step_Index'].tolist()
-        sol_init.update_via_lst(lst_cycle_num=lst_cycle_num, lst_cycle_step=lst_step_num, lst_t=lst_t, lst_I=lst_I,
+        lst_cycle_step = df['Step_Index'].tolist()
+        sol_init.update_via_lst(lst_cycle_num=lst_cycle_num, lst_cycle_step=lst_cycle_step, lst_t=lst_t, lst_I=lst_I,
                                 lst_V=lst_V)
         return cls(base_solution_instance=sol_init)
 
