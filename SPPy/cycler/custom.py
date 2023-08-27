@@ -6,7 +6,7 @@ from SPPy.cycler.base import BaseCycler
 
 
 class CustomCycler(BaseCycler):
-    def __init__(self, t_array: npt.ArrayLike, I_array: npt.ArrayLike,
+    def __init__(self, t_array: npt.ArrayLike, I_array: npt.ArrayLike, V_min: float,
                  SOC_LIB: float=1.0, SOC_LIB_min: float=0.0, SOC_LIB_max: float=1.0):
         """
         CustomCycler constructor.
@@ -26,6 +26,8 @@ class CustomCycler(BaseCycler):
         self.t_array = t_array
         self.I_array = I_array
         self.cycle_steps = ['custom']
+        self.SOC_LIB_init = self.SOC_LIB
+        self.V_min = V_min
 
     @property
     def t_max(self):
@@ -44,6 +46,10 @@ class CustomCycler(BaseCycler):
         """
         return interpolate.interp1d(self.t_array, self.I_array, kind='previous', fill_value='extrapolate')(t)
 
+    def reset(self) -> None:
+        self.time_elapsed = 0.0
+        self.SOC_LIB = self.SOC_LIB_init
+
     def plot(self):
         """
         Plots the cycler's instance time [s] vs. current [A]. According to the convention, the discharge current is
@@ -55,5 +61,5 @@ class CustomCycler(BaseCycler):
         plt.ylabel('I [A]')
         plt.show()
 
-    def reset(self) -> None:
-        self.time_elapsed = 0.0
+
+

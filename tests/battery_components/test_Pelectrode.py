@@ -26,7 +26,7 @@ class TestPElectrode(unittest.TestCase):
 
     pelec = electrode.PElectrode(L=7e-5, A=A_p, max_conc=max_conc_p, epsilon=epsilon_p, kappa=kappa_p, S=S_p, R=R_p,
                                  T_ref=T_ref_p, D_ref=D_ref_p, k_ref=k_ref_p, Ea_D=Ea_D_p, Ea_R=Ea_R_p,
-                                 brugg=brugg_p, T=T_p, SOC_init=SOC_init, func_OCP=funcs.OCP_ref_p,
+                                 brugg=brugg_p, T=298.15, SOC_init=SOC_init, func_OCP=funcs.OCP_ref_p,
                                  func_dOCPdT=funcs.dOCPdT_p, alpha=0.5)
 
     def test_constructor(self):
@@ -48,7 +48,7 @@ class TestPElectrode(unittest.TestCase):
         self.assertEqual(self.pelec.Ea_D, 29000)
         self.assertEqual(self.pelec.Ea_R, 58000)
         self.assertEqual(self.pelec.brugg, 1.5)
-        self.assertEqual(self.pelec.T, 298.15)
+        self.assertEqual(self.T_p, self.pelec.T)
         self.assertEqual(self.pelec.SOC_init, self.SOC_init)
         self.assertEqual(self.SOC_init, self.pelec.SOC)
         self.assertEqual(self.pelec.electrode_type, 'p')
@@ -58,6 +58,7 @@ class TestPElectrode(unittest.TestCase):
         This test method ensures that the diffusivity is calculated correctly.
         """
         # Test at room temperature
+        self.pelec.T = 298.15
         self.assertEqual(self.pelec.D, 1e-14)
 
         # Change temp. to be above room temperature. Expect the diffusivity to be higher than that at room
@@ -94,3 +95,4 @@ class TestPElectrode(unittest.TestCase):
         self.pelec.SOC = self.SOC_init
         self.pelec.T = 288.15
         self.assertEqual(4.032738688102419, self.pelec.OCP)
+        self.pelec.T = 298.15

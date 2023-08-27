@@ -32,7 +32,7 @@ class BaseCycler(ABC):
         else:
             raise TypeError("Not a valid step name")
 
-    @abstractmethod
+    # @abstractmethod
     def reset(self) -> None:
         """
         Resets the cycler instance.

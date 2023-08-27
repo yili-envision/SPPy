@@ -38,3 +38,4 @@ class TestPolyApprox(unittest.TestCase):
         self.assertEqual(0.7127537226189332, lst_poly_solver1[1])
 
         self.assertEqual(0.7504676658078573, lst_poly_solver2[0])
+        self.assertEqual(0.750422969925152, lst_poly_solver2[1])
