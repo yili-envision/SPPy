@@ -22,6 +22,14 @@ still an ongoing work and the documentation is not yet complete.
 - Visualization tools</b>
 - Sigma Point Kalman Filter (for analyzing application' battery management system (BMS)) </b>
 
+## Dependencies
+- Python 3.10 and above
+- numpy
+- pandas
+- matplotlib
+- scipy
+- tqdm
+
 ## Installation
 
 Either of the two recommended installation procedures can be used and the steps for these 
