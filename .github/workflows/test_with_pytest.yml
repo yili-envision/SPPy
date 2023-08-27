@@ -1,4 +1,5 @@
-name: ${{ github.actor }} is Testing
+name: pytest tests
+run-name: ${{ github.actor }} is testing
 
 on: [push]
 
