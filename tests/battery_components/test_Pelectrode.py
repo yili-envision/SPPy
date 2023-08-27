@@ -87,4 +87,10 @@ class TestPElectrode(unittest.TestCase):
         This test method ensures that the open-circuit potential (OCP) values are calculated correctly from the user
         inputted OCP vs. SOC function.
         """
-        self.assertEqual(4.030879849951008, self.pelec.OCP)
+        self.pelec.SOC = 0.4956
+        self.pelec.T = 298.15
+        self.assertEqual(4.176505962016067, self.pelec.OCP)
+
+        self.pelec.SOC = self.SOC_init
+        self.pelec.T = 288.15
+        self.assertEqual(4.032738688102419, self.pelec.OCP)

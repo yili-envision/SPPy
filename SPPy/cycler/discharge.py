@@ -4,9 +4,9 @@ from SPPy.cycler.base import BaseCycler
 
 
 class Discharge(BaseCycler):
-    def __init__(self, discharge_current: float, V_min: float, SOC_LIB_min: float, SOC_LIB: float):
+    def __init__(self, i_discharge_current: float, V_min: float, SOC_LIB_min: float, SOC_LIB: float):
         super().__init__(SOC_LIB_min=SOC_LIB_min, SOC_LIB=SOC_LIB)
-        self.discharge_current = -discharge_current
+        self.discharge_current = -i_discharge_current
         self.V_min = V_min
         self.num_cycles = 1
         self.cycle_steps = ['discharge']

@@ -85,6 +85,21 @@ class TestSPPySolverIsothermal(unittest.TestCase):
         self.assertEqual(298.15, self.sol.T[3])
         self.assertEqual(298.15, self.sol.T[4])
 
+    def test_poly_solver(self):
+        SOC_init_p = 0.4956
+        SOC_init_n = 0.7568
+        I = 1.656
+        V_min = 3.5
+        SOC_min = 0.1
+        SOC_LIB = 0.9
+        T = 298.15
+        test_cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_init_n=SOC_init_n, T=T)
+        dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_LIB_min=SOC_min, SOC_LIB=SOC_LIB)
+        test_solver = SPPy.SPPySolver(b_cell=self.test_cell, N=self.N, isothermal=True, degradation=False,
+                                      electrode_SOC_solver="poly", type='two')
+        sol = test_solver.solve(cycler_instance=dc)
+        self.assertEqual(3.925178151483124, sol.V[0])
+        print(sol.V)
 
 class TestSppySolverNonIsothermal(unittest.TestCase):
     """
@@ -123,3 +138,4 @@ class TestSppySolverNonIsothermal(unittest.TestCase):
         self.assertEqual(298.1502252195381, self.sol.T[2])
         self.assertEqual(298.1502973477614, self.sol.T[3])
         self.assertEqual(298.1503680083491, self.sol.T[4])
+

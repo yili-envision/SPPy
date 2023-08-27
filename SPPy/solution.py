@@ -151,9 +151,18 @@ class Solution:
         return {'cycle_no': total_cycles}
 
     @classmethod
-    def upload_exp_data(cls, filename: str, step_num: int = None):
+    def upload_exp_data(cls, filename: str, cycle_num: int | npt.ArrayLike = None,
+                        step_num: int | str = None, cell_cap: float = None):
         sol_init = SolutionInitializer()
         df = pd.read_csv(filename)
+        if cycle_num is not None:
+            if isinstance(cycle_num, int):
+                df = df[df['Cycle_Index'] == cycle_num]
+            elif (isinstance(cycle_num, np.ndarray) or isinstance(cycle_num, list)):
+                for cycle_num_i in cycle_num:
+                    df_res = pd.DataFrame()
+                    df_res.append(df[df['Cycle_Index'] == cycle_num_i])
+                df = df_res
         if step_num is not None:
             df = df[df['Step_Index'] == step_num]
         array_t = df['t [s]'].to_numpy()
@@ -165,6 +174,14 @@ class Solution:
         lst_cycle_step = df['Step_Index'].tolist()
         sol_init.update_via_lst(lst_cycle_num=lst_cycle_num, lst_cycle_step=lst_cycle_step, lst_t=lst_t, lst_I=lst_I,
                                 lst_V=lst_V)
+        if 'cap [Ahr]' not in df.columns:
+            if cell_cap is not None:
+                dt = np.diff(np.array(sol_init.lst_t), prepend=0)
+                dcap = dt * np.array(sol_init.lst_I) / (3600 * cell_cap)
+                cap = 1 + np.cumsum(dcap)
+                sol_init.lst_cap = cap.tolist()
+        else:
+            sol_init.lst_cap = ((cell_cap - df['cap [Ahr]'])/cell_cap).tolist()
         return cls(base_solution_instance=sol_init)
 
 
