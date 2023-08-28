@@ -258,3 +258,7 @@ SPPy/examples/parameter_sensitivity_analysis
 
 performance_and_profiling
 
+docs/Makefile
+docs/make.bat
+docs/Code_organization.*
+
