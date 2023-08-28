@@ -1,4 +1,4 @@
-# Single Particle Model with Thermal and Degradation Models
+# LIthium-Ion Cell Terminal Voltage Models coupled with Thermal and Degradation Models
 #### Copyright© 2023 by Moin Ahmed. All rights reserved.
 
 ## Description
@@ -12,6 +12,7 @@ parameter estimations (using genetic algorithm).
 All the code is written in Python programming language, and it is written in a modular fashion. The code is
 still an ongoing work and the documentation is not yet complete.
 </p>
+The [documentation](https://libsim.readthedocs.io/en/latest/) is available and currently hosted on readthedocs.io.
 
 ## Features
 
