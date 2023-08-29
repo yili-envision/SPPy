@@ -1,11 +1,10 @@
-============================================================================
-Example Usage - Equivalent Circuit Model - Isothermal - Discharge Cycle
-============================================================================
+=============================================================================
+Example Usage - Equivalent Circuit Model - NonIsothermal - Discharge Cycle
+=============================================================================
 
 The following code demonstrates the simulation using the discrete time equivalent circuit model (ECM) under isothermal
 conditions. Note that the user has to define the function representing the open-circuit potential (OCV) in the
-``func_OCV`` parameters. Also, the parameters ``func_dOCVdT`` can be set to ``None`` as it is not utilized for
-isothermal conditions.::
+``func_OCV`` parameters. as well as a function representing the change in OCV with respect to temperature.::
 
     import SPPy
 
@@ -22,7 +21,7 @@ isothermal conditions.::
                                SOC_init=0.98, T_init=298.15, func_eta=func_eta, func_OCV=func_OCV, func_dOCVdT=func_dOCVdT)
     # set-up cycler and solver
     dc = SPPy.Discharge(discharge_current=I, V_min=V_min, SOC_LIB_min=SOC_min, SOC_LIB=SOC_LIB)
-    solver = SPPy.DTSolver(battery_cell_instance=cell, isothermal=True)
+    solver = SPPy.DTSolver(battery_cell_instance=cell, isothermal=False)
     # solve
     sol = solver.solve(cycler=dc)
 
@@ -31,7 +30,7 @@ isothermal conditions.::
 
 The comprehensive_plot outputs the following plot:
 
-.. image:: Assests/example_ECM_isothermal.png
+.. image:: Assests/example_ECM_nonisothermal.png
 
 .. toctree::
    :maxdepth: -1

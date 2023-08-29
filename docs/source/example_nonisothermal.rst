@@ -1,6 +1,6 @@
-==================================================================
-Example - Single Particle Model - NonIsothermal - Discharge Cycle
-==================================================================
+==============================================================================
+Example Usage - Single Particle Model - NonIsothermal - Discharge Cycle
+==============================================================================
 The simulation consists of creating a (1) battery cell, (2) cycler, and (3) solver object. For the battery cell object,
 the parameters can be read from the parameter sets.
 
@@ -46,7 +46,7 @@ Furthermore, it has plotting methods, for eg.,::
 The following ``comprehensive_plot()`` method outputs the following plot with the information on the cell
 terminal potential during its discharge, as well the electrode's surface SOC.
 
-.. image:: example_nonisothermal.png
+.. image:: Assests/example_nonisothermal.png
 
 
 .. toctree::
