@@ -14,7 +14,7 @@ Welcome to SPPy's documentation!
 
    self
    example_isothermal
-
+   example_nonisothermal
 
 
 .. Indices and tables
