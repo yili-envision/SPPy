@@ -261,4 +261,7 @@ performance_and_profiling
 docs/Makefile
 docs/make.bat
 docs/Code_organization.*
-
+docs/requirements.txt
+docs/source/conf.py
+docs/source/_static
+docs/source/_templates
