@@ -12,8 +12,8 @@ Welcome to SPPy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   Examples
-      example_isothermal
+   self
+   example_isothermal
 
 
 
