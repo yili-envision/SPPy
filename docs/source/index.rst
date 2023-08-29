@@ -13,7 +13,7 @@ Welcome to SPPy's documentation!
    :caption: Contents:
 
    self
-   example_isothermal
+   examples
 
 
 
