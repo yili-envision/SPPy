@@ -1,11 +1,8 @@
 import pickle
 
-import numpy as np
 import scipy
-import matplotlib.pyplot as plt
 
 import SPPy
-from parameter_sets.test.funcs import OCP_ref_p, OCP_ref_n, dOCPdT_p, dOCPdT_n
 
 
 with open("SOC", "rb") as f_SOC:

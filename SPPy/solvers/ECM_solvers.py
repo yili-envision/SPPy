@@ -64,7 +64,7 @@ class DTSolver(BaseSolver):
                 step_completed = False
                 while not step_completed:
                     t_curr = t_prev + dt
-                    I = -cycler.get_current(step_name=step)
+                    I = -cycler.get_current(step=step)
 
                     # break condition for rest time
                     if step == "rest" and t_curr > cycler.rest_time:

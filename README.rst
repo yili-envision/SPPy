@@ -9,7 +9,8 @@ Copyright© 2023 by Moin Ahmed. All rights reserved.
 Description
 ==================================================================
 
-This repository contains the code for running equivalent circuit model (ECM) and single particle model (SPM) with thermal and degradation models on
+This `repository <https://github.com/m0in92/SPPy>`_ contains the code for running equivalent circuit model
+(ECM) and single particle model (SPM) with thermal and degradation models on
 Lithium-ion Batteries (LIB). Moreover, the repository contains the tools for visualization and
 parameter estimations (using genetic algorithm).
 

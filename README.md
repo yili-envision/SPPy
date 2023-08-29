@@ -1,4 +1,4 @@
-# LIthium-Ion Cell Terminal Voltage Models coupled with Thermal and Degradation Models
+# Lithium-Ion Cell Terminal Voltage Models coupled with Thermal and Degradation Models
 #### Copyright© 2023 by Moin Ahmed. All rights reserved.
 
 ## Description

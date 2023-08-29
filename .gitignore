@@ -247,6 +247,7 @@ parameter_sets/for_sensitivity_analysis
 parameter_sets/Tesla
 #parameter_sets/Calce_NMC_18650
 
+SPPy/gui
 SPPy/examples/isothermal/save_plots.py
 SPPy/examples/different_cyclers/save_results.py
 SPPy/examples/overpotential
@@ -260,8 +261,3 @@ performance_and_profiling
 
 docs/Makefile
 docs/make.bat
-docs/Code_organization.*
-docs/requirements.txt
-docs/source/conf.py
-docs/source/_static
-docs/source/_templates

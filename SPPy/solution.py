@@ -31,7 +31,7 @@ class ECMSolution:
         self.T = np.array(ecm_sol_initializer_instance.lst_T)
         self.I = np.array(ecm_sol_initializer_instance.lst_I)
 
-    def comprehensive_plot(self):
+    def comprehensive_plot(self, save_dir=None):
         fig = plt.figure(figsize=(6.4, 6), dpi=300)
 
         ax1 = fig.add_subplot(311)
@@ -48,6 +48,9 @@ class ECMSolution:
         ax3.plot(self.t, self.I)
         ax3.set_xlabel('Time [s]')
         ax3.set_ylabel('Current [A]')
+
+        if save_dir is not None:
+            plt.savefig(save_dir)
 
         plt.tight_layout()
         plt.show()

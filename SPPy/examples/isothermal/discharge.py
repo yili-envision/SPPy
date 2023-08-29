@@ -24,4 +24,4 @@ sol = solver.solve(cycler_instance=dc)
 print(sol.cycle_summary)
 
 # Plot
-sol.comprehensive_plot()
+sol.comprehensive_isothermal_plot()
