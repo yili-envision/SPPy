@@ -50,6 +50,6 @@ terminal potential during its discharge, as well the electrode's surface SOC.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: -1
    :caption: Contents:
 
