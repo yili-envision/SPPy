@@ -6,5 +6,4 @@ Battery Simulation Examples
    :maxdepth: 2
    :caption: Contents:
 
-    index
     example_isothermal
