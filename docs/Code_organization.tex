@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+
+\usepackage{dirtree}
+\usepackage{xcolor}
+\usepackage{forest}
+
+\definecolor{folderbg}{RGB}{124,166,198}
+\definecolor{folderborder}{RGB}{110,144,169}
+
+
+\title{SPPy Package Structure}
+\author{Moin Ahmed}
+
+\begin{document}
+
+\maketitle
+
+\section{File Directories}
+
+\renewcommand*\DTstyle{\ttfamily\textcolor{black}}
+\dirtree{%
+.1 /.
+.2 Assests.
+.2 docs.
+.2 parameter\_sets.
+.2 SPPy.
+.3 battery\_components.
+.3 calc\_helpers.
+.3 config.
+.3 cycler.
+.3 examples.
+.3 general\_OCP.
+.3 models.
+.3 parameter\_estimations.
+	.4 rough\_estimates.py.
+.3 solvers.
+.3 visualization.
+.3 warning\_and\_exceptions.
+.2 tests.
+.2 License.
+.2 README.md.
+.2 Setup.py.
+}
+
+
+
+\end{document}
