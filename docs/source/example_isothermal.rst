@@ -1,11 +1,11 @@
 ==================================================================
-Single Particle Model - Isothermal - Discharge Cycle
+Example - Single Particle Model - Isothermal - Discharge Cycle
 ==================================================================
 The simulation consists of creating a (1) battery cell, (2) cycler, and (3) solver object. For the battery cell object,
 the parameters can be read from the parameter sets.
 
 The following gives an example of running a single particle model under isothermal conditions using the parameter_set
-named "Gao-Randall".::
+named "Gao-Randall"::
 
     import SPPy
     </code></br></br></br>
@@ -41,12 +41,15 @@ The ``sol`` object stores various simulation results, including time, cell termi
 Furthermore, it has plotting methods, for eg.,::
 
     # Plot </br>
-    sol.comprehensive_plot()
+    sol.comprehensive_isothermal_plot()
+
+The following ``comprehensive_isothermal_plot()`` method outputs the following plot with the information on the cell
+terminal potential during its discharge, as well the electrode's surface SOC.
+
+.. image:: example_isothermal.png
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-    index
-    examples
