@@ -12,6 +12,8 @@ Welcome to SPPy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   example_isothermal
+
 
 
 .. Indices and tables
