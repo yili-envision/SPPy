@@ -16,15 +16,10 @@ Welcome to SPPy's documentation!
    background_overpotential
    background_SPM
    package_achitecture
+   modules
    example_ECM_isothermal
    example_ECM_nonisothermal
    example_isothermal
    example_nonisothermal
+   appendexA.rst
 
-
-.. Indices and tables
-.. ==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
