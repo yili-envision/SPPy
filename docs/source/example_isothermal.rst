@@ -42,3 +42,9 @@ Furthermore, it has plotting methods, for eg.,::
 
     # Plot </br>
     sol.comprehensive_plot()
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+    index
