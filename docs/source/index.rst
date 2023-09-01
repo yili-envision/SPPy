@@ -11,10 +11,7 @@ Welcome to SPPy's documentation!
    :caption: Contents:
 
    self
-   background_introduction
-   background_SOC_OCV
-   background_overpotential
-   background_SPM
+   installation
    package_achitecture
    modules
    example_ECM_isothermal
