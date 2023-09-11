@@ -1,3 +1,14 @@
+""" parameters_set
+Contains the classes and functionality for the extracting battery cell parameters
+"""
+
+__all__ = ['ParameterSets']
+
+__author__ = 'Moin Ahmed'
+__copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights reserved'
+__status__ = 'deployed'
+
+
 import importlib
 
 import pandas as pd

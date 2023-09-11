@@ -1,3 +1,13 @@
+""" electrode
+Contains classes and functionalities for the electrode related objects
+"""
+
+__all__ = ['Electrode', 'PElectrode', 'NElectrode']
+
+__author__ = 'Moin Ahmed'
+__copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights reserved'
+__status__ = 'deployed'
+
 from typing import Optional
 from dataclasses import dataclass, field
 import collections

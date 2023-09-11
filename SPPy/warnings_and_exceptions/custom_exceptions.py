@@ -1,8 +1,14 @@
+__author__ = 'Moin Ahmed'
+__copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
+__status__ = 'deployed'
+
+
 class InvalidSOCException(Exception):
     "Raised when SOC is smaller than 0 or greater than 1."
     def __init__(self, electrode_type):
         self.msg = f"{electrode_type} SOC is beyond 0-1"
         super().__init__(self.msg)
+
 
 
 class InsufficientInputOperatingConditions(Exception):

@@ -1,3 +1,13 @@
+""" battery_cell
+contains the class and functionality for the battery cell objects
+"""
+
+__all__ = ['BatteryCellBase', 'BatteryCell', 'ECMBatteryCell']
+
+__author__ = 'Moin Ahmed'
+__copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights reserved.'
+__status__ = 'deployed'
+
 from dataclasses import dataclass
 from typing import Callable
 

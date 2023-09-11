@@ -1,3 +1,8 @@
+__author__ = 'Moin Ahmed'
+__copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
+__status__ = 'deployed'
+
+
 from SPPy.calc_helpers.ode_solvers import rk4
 from SPPy.models.thermal import ECMLumped
 
