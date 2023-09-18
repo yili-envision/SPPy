@@ -1,0 +1,94 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+BaseCycler <-- Discharge
+SPPySolver *-- BatteryCell
+
+BaseCycler <.right. SPPySolver
+Solution <.left. SPPySolver
+SPM <.left. SPPySolver
+
+class BatteryCell {
+T_: float
+rho: float
+Vol: float
+C_p: float
+h: float
+A: float
+cap: float
+V_max: float
+V_min: float
+
+elec_p: electrode.PElectrode
+elec_n: electrode.NElectrode
+electrolyte: electrolyte.Electrolyte
+}
+
+class SPM {
++ m(...): float
++ calc_terminal_voltage(...): float
+}
+
+abstract class BaseCycler {
+time_elapsed: float
+SOC_LIB: float
+SOC_LIB_min: float
+SOC_LIB_max: float
+charge_current: float
+discharge_current: float
+rest_time: float
+num_cycles: int
+cycle_steps: list
+
+get_current(step_name: str, t: float): float
+reset(): None
+}
+
+class Discharge {
+discharge_current = -discharge_current
+num_cycles = 1
+cycle_steps = ['discharge']
+}
+
+class SPPySolver {
+b_cell: BatteryCell
+isothermal: bool
+degradation: bool
+electrode_SOC_solver: str = 'eigen'
+**electrode_SOC_solver_params
+
+calc_terminal_voltage(...): float
+calc_temp(...): float
+solver(cycler_instance: BaseCycler, ... ): Solution
+}
+
+class Solution {
+cycle_num: npt.ArrayLike
+cycle_step: npt.ArrayLike
+t: npt.ArrayLike
+I: npt.ArrayLike
+V: npt.ArrayLike
+OCV_LIB: npt.ArrayLike
+x_surf_p: npt.ArrayLike
+x_surf_n: npt.ArrayLike
+cap: npt.ArrayLike
+cap_charge: npt.ArrayLike
+cap_discharge: npt.ArrayLike
+SOC_LIB: npt.ArrayLike
+battery_cap: npt.ArrayLike
+T: npt.ArrayLike
+R_cell: npt.ArrayLike
+j_tot: npt.ArrayLike
+j_i: npt.ArrayLike
+js: npt.ArrayLike
+
+plot_comprehensive(): None
+}
+
+together {
+class BaseCycler
+class SPPySolver
+class BatteryCell
+}
+
+@enduml

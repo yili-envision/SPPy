@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+BaseCycler <-- Discharge
+
+abstract class BaseCycler {
+time_elapsed: float
+SOC_LIB: float
+SOC_LIB_min: float
+SOC_LIB_max: float
+charge_current: float
+discharge_current: float
+rest_time: float
+num_cycles: int
+cycle_steps: list
+
+get_current(step_name: str, t: float): float
+reset(): None
+}
+
+class Discharge {
+discharge_current = -discharge_current
+num_cycles = 1
+cycle_steps = ['discharge']
+}
+
+@enduml

@@ -1,0 +1,64 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+BatteryCell *-- NElectrode
+BatteryCell *-- PElectrode
+BatteryCell *-- Electrolyte
+
+Electrode <-- NElectrode
+Electrode <-- PElectrode
+
+class Electrode {
++ L: float
++ A: float
++ kappa: float
++ epsilon: float
++ max_conc: float
++ R: float # Radius
++ S: Optional[float]
++ T_ref: float
++ D_ref: float
++ k_ref: float
++ Ea_D: float
++ Ea_R: float
++ alpha: float
++ brugg: float
++ SOC_init: float
++ T: float
+
++ OCP(): float
+}
+
+class PElectrode {
++ electrode_type: str = 'p'
+}
+
+class NElectrode {
++ electrode_type: str = 'n'
+}
+
+class Electrolyte {
+L: float
+conc: float
+kappa: float
+epsilon: float
+brugg: float
+}
+
+class BatteryCell {
+T_: float
+rho: float
+Vol: float
+C_p: float
+h: float
+A: float
+cap: float
+V_max: float
+V_min: float
+
+elec_p: electrode.PElectrode
+elec_n: electrode.NElectrode
+electrolyte: electrolyte.Electrolyte
+}
+
+@enduml

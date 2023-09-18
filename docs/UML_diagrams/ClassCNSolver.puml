@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+class CNSolver {
++ dr: float
++ A: float
++ B : float
++ array_R: npt.ArrayLike
++ M(...): npt.ArrayLike
++ solve(...): npt.ArrayLike
+}
+
+@enduml

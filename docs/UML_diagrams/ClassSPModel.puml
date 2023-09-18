@@ -1,0 +1,9 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class SPM {
++ m(...): float
++ calc_terminal_voltage(...): float
+}
+
+@enduml
