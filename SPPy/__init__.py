@@ -1,5 +1,5 @@
 __all__ = ['battery_components', 'calc_helpers', 'config', 'cycler', 'examples', 'general_OCP', 'models',
-           'parameter_estimations', 'solvers', 'visualization', 'warnings_and_exceptions']
+           'parameter_estimations', 'solvers', 'sol_and_visualization', 'warnings_and_exceptions']
 
 __author__ = 'Moin Ahmed'
 __copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
@@ -13,6 +13,6 @@ from SPPy.cycler.cc import CC, CCCV, CCNoFirstRest, DischargeRestCharge, Dischar
 from SPPy.cycler.charge import Charge, ChargeRest
 from SPPy.cycler.discharge import Discharge, DischargeRest, CustomDischarge
 from SPPy.cycler.custom import CustomCycler
-from SPPy.solution import Solution
+from SPPy.sol_and_visualization.solution import Solution, ECMSolution
 
-from SPPy.visualization.plots import Plots
+from SPPy.sol_and_visualization.plots import Plots

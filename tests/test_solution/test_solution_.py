@@ -1,6 +1,6 @@
 import unittest
 
-from SPPy.solution import SolutionInitializer
+from SPPy.sol_and_visualization.solution import SolutionInitializer
 
 
 class TestSolutionInitializer(unittest.TestCase):

@@ -4,11 +4,10 @@ Note the performance for SPM is not great at high C-rates
 
 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 import SPPy
-from SPPy.solution import Solution
+from SPPy.sol_and_visualization.solution import Solution
 
 
 sol_exp = Solution.upload_exp_data(file_name='FUDS_25.csv')

@@ -8,7 +8,7 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-from SPPy.solution import Solution
+from SPPy.sol_and_visualization.solution import Solution
 from SPPy.calc_helpers.constants import Constants
 
 

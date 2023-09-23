@@ -106,70 +106,75 @@ class ECMBatteryCell:
     R0_ref: float  # resistance value of R0 [ohm]
     R1_ref: float  # resistance value of R1 [ohm]
     C1: float  # capacitance of capacitor in RC circuit [ohm]
-    T_ref: float  # reference temperature for R0_ref and R1_ref
+    temp_ref: float  # reference temperature for R0_ref and R1_ref
     Ea_R0: float  # activation energy for R0 [J/mol]
     Ea_R1: float  # activation energy for R1 [J/mol]
 
     rho: float  # battery density (mostly for thermal modelling), kg/m3
-    Vol: float  # battery cell volume, m3
-    C_p: float  # specific heat capacity, J / (K kg)
+    vol: float  # battery cell volume, m3
+    c_p: float  # specific heat capacity, J / (K kg)
     h: float  # heat transfer coefficient, J / (S K)
-    A: float  # surface area, m2
+    area: float  # surface area, m2
     cap: float  # capacity, Ah
-    V_max: float  # maximum potential
-    V_min: float  # minimum potential
+    v_max: float  # maximum potential
+    v_min: float  # minimum potential
 
-    SOC_init: float  # initial SOC
-    T_init: float  # initial battery cell temperature, K
+    soc_init: float  # initial SOC
+    temp_init: float  # initial battery cell temperature, K
 
     func_eta: Callable  # func for the Columbic efficiency as a func of SOC and temp
-    func_OCV: Callable  # func which outputs the battery OCV from its SOC
-    func_dOCVdT: Callable  # function which outputs the change of OCV with respect to temperature from its SOC
+    func_ocv: Callable  # func which outputs the battery OCV from its SOC
+    func_docvdtemp: Callable  # function which outputs the change of OCV with respect to temperature from its SOC
 
     def __post_init__(self):
-        self.T_ = self.T_init
-        self.SOC_ = self.SOC_init
+        self.temp_ = self.temp_init
+        self.soc_ = self.soc_init
 
     @property
-    def T(self):
+    def temp(self):
         """
         Represents the current temperature of the battery cell [K]
         :return: (float) current battery cell temperature [K]
         """
-        return self.T_
+        return self.temp_
 
-    @T.setter
-    def T(self, T_new: float):
-        self.T_ = T_new
+    @temp.setter
+    def temp(self, temp_new: float):
+        self.temp_ = temp_new
 
     @property
-    def SOC(self):
+    def soc(self):
         """
         Represents the current battery cell SOC
         :return: (float) returns the current battery cell SOC
         """
-        return self.SOC_
+        return self.soc_
 
-    @SOC.setter
-    def SOC(self, SOC_new: float):
-        self.SOC_ = SOC_new
+    @soc.setter
+    def soc(self, soc_new: float):
+        """
+        Setter function for the battery cell state-of-charge
+        :param soc_new:
+        :return:
+        """
+        self.soc_ = soc_new
 
     @property
     def R0(self):
-        return self.R0_ref * np.exp(-1 * self.Ea_R0 / constants.Constants.R * (1 / self.T - 1 / self.T_ref))
+        return self.R0_ref * np.exp(-1 * self.Ea_R0 / constants.Constants.R * (1 / self.temp - 1 / self.temp_ref))
 
     @property
     def R1(self):
-        return self.R0_ref * np.exp(-1 * self.Ea_R1 / constants.Constants.R * (1 / self.T - 1 / self.T_ref))
+        return self.R0_ref * np.exp(-1 * self.Ea_R1 / constants.Constants.R * (1 / self.temp - 1 / self.temp_ref))
 
     @property
-    def dOCPdT(self):
-        return self.func_dOCVdT(self.SOC)
+    def docpdtemp(self):
+        return self.func_docvdtemp(self.soc)
 
     @property
-    def OCV(self):
-        return self.func_OCV(self.SOC) + self.dOCPdT * (self.T - self.T_ref)
+    def ocv(self):
+        return self.func_ocv(self.soc) + self.docpdtemp * (self.temp - self.temp_ref)
 
     @property
     def eta(self):
-        return self.func_eta(self.SOC, self.T)
+        return self.func_eta(self.soc, self.temp)

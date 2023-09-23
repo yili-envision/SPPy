@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 import SPPy
 
 
@@ -24,4 +26,5 @@ sol = solver.solve(cycler_instance=dc)
 print(sol.cycle_summary)
 
 # Plot
+plt.plot(sol.t, sol.OCV_LIB)
 sol.comprehensive_isothermal_plot()

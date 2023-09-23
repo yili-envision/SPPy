@@ -1,9 +1,16 @@
+""" solution.py
+Contains the classes and functionality to store and plot the simulation results.
+"""
+
+__all__ = ['ECMSolution', 'SolutionInitializer', 'Solution']
+
 __author__ = 'Moin Ahmed'
 __copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
 __status__ = 'deployed'
 
 
 import pickle
+from typing import Self
 
 import numpy as np
 import numpy.typing as npt
@@ -16,43 +23,76 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class ECMSolutionInitializer:
-    lst_t: list = field(default_factory=lambda: [])  # solution time [s]
-    lst_V: list = field(default_factory=lambda: [])  # cell terminal potential [V]
-    lst_T: list = field(default_factory=lambda: [])  # battery cell temperature [K]
-    lst_I: list = field(default_factory=lambda: [])  # applied current [A]
-
-    def update(self, t: float, V: float, T: float, I: float):
-        self.lst_t.append(t)
-        self.lst_V.append(V)
-        self.lst_T.append(T)
-        self.lst_I.append(I)
-
-
 class ECMSolution:
-    def __init__(self, ecm_sol_initializer_instance: ECMSolutionInitializer):
-        self.t = np.array(ecm_sol_initializer_instance.lst_t)
-        self.V = np.array(ecm_sol_initializer_instance.lst_V)
-        self.T = np.array(ecm_sol_initializer_instance.lst_T)
-        self.I = np.array(ecm_sol_initializer_instance.lst_I)
+    array_t: np.ndarray = field(default_factory=lambda: np.array([]))  # solution time [s]
+    array_I: np.ndarray = field(default_factory=lambda: np.array([]))  # applied current [A]
+    array_V: np.ndarray = field(default_factory=lambda: np.array([]))  # cell terminal potential [V]
+    array_temp: np.ndarray = field(default_factory=lambda: np.array([]))  # battery cell temperature [K]
+    array_soc: np.ndarray = field(default_factory=lambda: np.array([]))  # np array containing the battery cell soc
+
+    @classmethod
+    def read_from_csv_file(cls, filepath: str) -> Self:
+        """
+        Reads the csv file containing the experimental data and stores the data in its numpy arrays. The labelling
+        of the columns in the experimental csv file needs to follow a certain naming conventions.
+        :param filepath:
+        :return:
+        """
+        df = pd.read_csv(filepath)
+        array_t = df['t [s]'].to_numpy()
+        array_I = df['I [A]'].to_numpy()
+        array_V = df['V [V]'].to_numpy()
+        return cls(array_t=array_t, array_I=array_I, array_V=array_V)
+
+    @classmethod
+    def __set_matplotlib_settings(cls) -> None:
+        mpl.rcParams['lines.linewidth'] = 3
+        plt.rc('axes', titlesize=20)
+        plt.rc('axes', labelsize=12.5)
+        plt.rc('axes', labelweight='bold')
+        plt.rcParams['font.size'] = 15
+
+    def update(self, t: float, i_app: float, v: float, temp: float, soc: float) -> None:
+        """
+        Updates the instance's arrays with the new data values
+        :param t: time [s]
+        :param i_app: applied current [A]
+        :param v: cell terminal potential [V]
+        :param temp: cell surface temp. [K]
+        :param soc: state-of-charge
+        :return: None
+        """
+        self.__set_matplotlib_settings()
+        self.array_t = np.append(self.array_t, t)
+        self.array_I = np.append(self.array_I, i_app)
+        self.array_V = np.append(self.array_V, v)
+        self.array_temp = np.append(self.array_temp, temp)
+        self.array_soc = np.append(self.array_soc, soc)
 
     def comprehensive_plot(self, save_dir=None):
         fig = plt.figure(figsize=(6.4, 6), dpi=300)
 
-        ax1 = fig.add_subplot(311)
-        ax1.plot(self.t, self.V)
+        x_axis = self.array_t
+
+        ax1 = fig.add_subplot(221)
+        ax1.plot(x_axis, self.array_V)
         ax1.set_xlabel('Time [s]')
         ax1.set_ylabel('Voltage [V]')
 
-        ax2 = fig.add_subplot(312)
-        ax2.plot(self.t, self.T - 273.15)
+        ax2 = fig.add_subplot(222)
+        ax2.plot(x_axis, self.array_soc)
         ax2.set_xlabel('Time [s]')
-        ax2.set_ylabel('Temp. [K]')
+        ax2.set_ylabel('SOC')
 
-        ax3 = fig.add_subplot(313)
-        ax3.plot(self.t, self.I)
+        ax3 = fig.add_subplot(223)
+        ax3.plot(x_axis, self.array_temp - 273.15)
         ax3.set_xlabel('Time [s]')
-        ax3.set_ylabel('Current [A]')
+        ax3.set_ylabel('Temp. [K]')
+
+        ax4 = fig.add_subplot(224)
+        ax4.plot(x_axis, self.array_I)
+        ax4.set_xlabel('Time [s]')
+        ax4.set_ylabel('Current [A]')
 
         if save_dir is not None:
             plt.savefig(save_dir)

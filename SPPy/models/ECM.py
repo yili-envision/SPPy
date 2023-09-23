@@ -50,7 +50,7 @@ class Thevenin1RC:
     https://doi.org/10.1016/j.jpowsour.2012.11.044
     """
     @classmethod
-    def SOC_next(cls, dt: float, i_app: float, SOC_prev: float, Q: float, eta: float):
+    def soc_next(cls, dt: float, i_app: float, SOC_prev: float, Q: float, eta: float):
         """
         This methods calculates the SOC at the next time-step
         :param dt: time difference between the current and previous time steps [s]
@@ -62,7 +62,8 @@ class Thevenin1RC:
         """
         return SOC_prev - dt * eta * i_app / (3600 * Q)
 
-    def i_R1_next(self, dt: float, i_app: float, i_R1_prev: float, R1: float, C1: float):
+    @classmethod
+    def i_R1_next(cls, dt: float, i_app: float, i_R1_prev: float, R1: float, C1: float):
         """
         Measures the current through R1 (i_R1) at the current time step.
         :param dt: time difference between the current and the previous time step [s]
@@ -74,7 +75,8 @@ class Thevenin1RC:
         """
         return np.exp(-dt/(R1*C1)) * i_R1_prev + (1-np.exp(-dt/(R1*C1))) * i_app
 
-    def V(self, i_app, OCV: float, R0: float, R1: float, i_R1: float):
+    @classmethod
+    def v(cls, i_app, OCV: float, R0: float, R1: float, i_R1: float):
         """
         This method calculates the cell terminal voltage.
         :param i_app: (float) applied current at current time step, k
