@@ -67,7 +67,7 @@ class DTSolver(BaseSolver):
                           R0=self.b_cell.R0, R1=self.b_cell.R1, i_R1=i_r1_prev)
         return i_r1_prev, v
 
-    def __solve_custom_step(self, cycling_step: CustomCycler, dt: float):
+    def __solve_custom_step(self, cycling_step: CustomCycler, dt: float, verbose: bool):
         sol = ECMSolution()  # initialize the solution object
         sol.update(t=0.0, i_app=0.0, v=self.b_cell.ocv, temp=self.b_cell.temp, soc=self.b_cell.soc)
 
@@ -89,7 +89,7 @@ class DTSolver(BaseSolver):
             # Calc temp
             if self.isothermal is not True:
                 self.b_cell.temp = calc_cell_temp(t_prev=t_prev, dt=dt, temp_prev=self.b_cell.temp, V=v,
-                                                  I=-i_app_curr,
+                                                  I=i_app_curr,
                                                   rho=self.b_cell.rho, Vol=self.b_cell.vol, C_p=self.b_cell.c_p,
                                                   OCV=self.b_cell.ocv, dOCVdT=self.b_cell.docpdtemp,
                                                   h=self.b_cell.h,
@@ -100,12 +100,16 @@ class DTSolver(BaseSolver):
                 step_completed = True
             if v < cycling_step.V_min:
                 step_completed = True
-            if t_curr > cycling_step.array_t[-1]:
+            if t_curr > cycling_step.t_max:
                 step_completed = True
 
             # update the sol object
             sol.update(t=t_curr, i_app=i_app_curr, v=v, temp=self.b_cell.temp, soc=self.b_cell.soc)
             t_prev = t_curr
+
+            if verbose == True:
+                print('t=', t_curr, ' i_app=', i_app_curr, ' v=', v, ' temp=', self.b_cell.temp, ' soc=', self.b_cell.soc)
+
         return sol
 
     def __solve_standard_cycling_step(self, cycler: BaseCycler, dt: float) -> ECMSolution:
@@ -153,8 +157,8 @@ class DTSolver(BaseSolver):
         return sol
 
     @timer
-    def solve(self, cycling_step: BaseCycler, dt: float = 0.1) -> ECMSolution:
+    def solve(self, cycling_step: BaseCycler, dt: float = 0.1, verbose: bool = False) -> ECMSolution:
         if isinstance(cycling_step, CustomCycler):
-            return self.__solve_custom_step(cycling_step=cycling_step, dt=dt)
+            return self.__solve_custom_step(cycling_step=cycling_step, dt=dt, verbose=verbose)
         else:
             return self.__solve_standard_cycling_step(cycler=cycling_step, dt=dt)

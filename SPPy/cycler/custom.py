@@ -38,7 +38,7 @@ class CustomCycler(BaseCycler):
         """
         return self.array_t[-1]
 
-    def get_current(self, step_name: str, t: float):
+    def get_current(self, step_name: str, t: float) -> float:
         """
         Returns the current value from the inputted time value. This current value is interpolation based on the
         current value at the previous time step.
@@ -46,7 +46,10 @@ class CustomCycler(BaseCycler):
         :param t: time [s]
         :returns: current value [A]
         """
-        return interpolate.interp1d(self.array_t, self.array_I, kind='previous', fill_value='extrapolate')(t)
+        i_app = interpolate.interp1d(self.array_t, self.array_I, kind='previous', fill_value='extrapolate')(t)
+        if np.isnan(i_app):
+            return 0.0
+        return i_app
 
     def reset(self) -> None:
         self.time_elapsed = 0.0

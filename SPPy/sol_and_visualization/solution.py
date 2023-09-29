@@ -10,7 +10,7 @@ __status__ = 'deployed'
 
 
 import pickle
-from typing import Self
+from typing import Self, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -45,6 +45,11 @@ class ECMSolution:
         return cls(array_t=array_t, array_I=array_I, array_V=array_V)
 
     @classmethod
+    def read_from_arrays(cls, array_t: npt.ArrayLike, array_i: npt.ArrayLike, array_v: npt.ArrayLike,
+                         array_temp: npt.ArrayLike, array_soc: Optional[npt.ArrayLike]) -> Self:
+        return cls(array_t=array_t, array_I=array_i, array_V=array_v, array_temp=array_temp, array_soc=array_soc)
+
+    @classmethod
     def __set_matplotlib_settings(cls) -> None:
         mpl.rcParams['lines.linewidth'] = 3
         plt.rc('axes', titlesize=20)
@@ -69,23 +74,30 @@ class ECMSolution:
         self.array_temp = np.append(self.array_temp, temp)
         self.array_soc = np.append(self.array_soc, soc)
 
-    def comprehensive_plot(self, save_dir=None):
+    def comprehensive_plot(self, sol_exp: Optional[Self] = None, save_dir: Optional[str]=None):
         fig = plt.figure(figsize=(6.4, 6), dpi=300)
 
         x_axis = self.array_t
 
         ax1 = fig.add_subplot(221)
-        ax1.plot(x_axis, self.array_V)
+        ax1.plot(x_axis, self.array_V, label='sim')
+        if sol_exp is not None:
+            ax1.plot(sol_exp.array_t, sol_exp.array_V, label='exp')
+            ax1.legend()
         ax1.set_xlabel('Time [s]')
         ax1.set_ylabel('Voltage [V]')
 
         ax2 = fig.add_subplot(222)
-        ax2.plot(x_axis, self.array_soc)
+        if self.array_soc is not None:
+            ax2.plot(x_axis, self.array_soc)
         ax2.set_xlabel('Time [s]')
         ax2.set_ylabel('SOC')
 
         ax3 = fig.add_subplot(223)
-        ax3.plot(x_axis, self.array_temp - 273.15)
+        ax3.plot(x_axis, self.array_temp - 273.15, label='sim')
+        if sol_exp is not None:
+            ax3.plot(sol_exp.array_t, sol_exp.array_temp - 273.15, label='exp')
+            ax3.legend()
         ax3.set_xlabel('Time [s]')
         ax3.set_ylabel('Temp. [K]')
 

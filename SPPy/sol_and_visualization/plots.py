@@ -1,3 +1,7 @@
+""" plots.py
+Contains the classes and functionalities to plot and compare various simulation results (Solution) objects
+"""
+
 __author__ = 'Moin Ahmed'
 __copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
 __status__ = 'deployed'
@@ -11,6 +15,9 @@ import matplotlib as mpl
 from SPPy.sol_and_visualization.solution import Solution
 from SPPy.calc_helpers.constants import Constants
 
+
+class ECMPlots:
+    pass
 
 class Plots:
     def __init__(self, *args):
