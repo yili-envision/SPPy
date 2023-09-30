@@ -69,7 +69,7 @@ class DTSolver(BaseSolver):
 
     def __solve_custom_step(self, cycling_step: CustomCycler, dt: float, verbose: bool):
         sol = ECMSolution()  # initialize the solution object
-        sol.update(t=0.0, i_app=0.0, v=self.b_cell.ocv, temp=self.b_cell.temp, soc=self.b_cell.soc)
+        sol.update(t=0.0, i_app=0.0, v=self.b_cell.ocv, temp=self.b_cell.temp, soc=self.b_cell.soc, i_r1=0.0)
 
         t_prev = 0.0  # [s]
         i_r1_prev = 0.0  # [A]
@@ -104,11 +104,12 @@ class DTSolver(BaseSolver):
                 step_completed = True
 
             # update the sol object
-            sol.update(t=t_curr, i_app=i_app_curr, v=v, temp=self.b_cell.temp, soc=self.b_cell.soc)
+            sol.update(t=t_curr, i_app=i_app_curr, v=v, temp=self.b_cell.temp, soc=self.b_cell.soc, i_r1=i_r1_prev)
             t_prev = t_curr
 
             if verbose == True:
-                print('t=', t_curr, ' i_app=', i_app_curr, ' v=', v, ' temp=', self.b_cell.temp, ' soc=', self.b_cell.soc)
+                print('t=', t_curr, ' i_app=', i_app_curr, ' v=', v, ' temp=', self.b_cell.temp,
+                      ' soc=', self.b_cell.soc, ' i_R1=', i_r1_prev)
 
         return sol
 
@@ -162,3 +163,6 @@ class DTSolver(BaseSolver):
             return self.__solve_custom_step(cycling_step=cycling_step, dt=dt, verbose=verbose)
         else:
             return self.__solve_standard_cycling_step(cycler=cycling_step, dt=dt)
+
+    def solveSPKF(self):
+        pass

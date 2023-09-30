@@ -1,4 +1,4 @@
-__all__ = ['battery_components', 'calc_helpers', 'config', 'cycler', 'examples', 'general_OCP', 'models',
+__all__ = ['battery_components', 'calc_helpers', 'config', 'cycler', 'general_OCP', 'models',
            'parameter_estimations', 'solvers', 'sol_and_visualization', 'warnings_and_exceptions']
 
 __author__ = 'Moin Ahmed'
@@ -14,5 +14,9 @@ from SPPy.cycler.charge import Charge, ChargeRest
 from SPPy.cycler.discharge import Discharge, DischargeRest, CustomDischarge
 from SPPy.cycler.custom import CustomCycler
 from SPPy.sol_and_visualization.solution import Solution, ECMSolution
+
+from SPPy.calc_helpers.computational_intelligence_algorithms import GA
+from SPPy.calc_helpers.random_vectors import NormalRandomVector
+from SPPy.calc_helpers.kalman_filter import SPKF
 
 from SPPy.sol_and_visualization.plots import Plots

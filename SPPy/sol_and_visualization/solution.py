@@ -29,6 +29,7 @@ class ECMSolution:
     array_V: np.ndarray = field(default_factory=lambda: np.array([]))  # cell terminal potential [V]
     array_temp: np.ndarray = field(default_factory=lambda: np.array([]))  # battery cell temperature [K]
     array_soc: np.ndarray = field(default_factory=lambda: np.array([]))  # np array containing the battery cell soc
+    array_I_R1: np.ndarray = field(default_factory=lambda: np.array([]))  # current across the R1 resistor
 
     @classmethod
     def read_from_csv_file(cls, filepath: str) -> Self:
@@ -47,6 +48,15 @@ class ECMSolution:
     @classmethod
     def read_from_arrays(cls, array_t: npt.ArrayLike, array_i: npt.ArrayLike, array_v: npt.ArrayLike,
                          array_temp: npt.ArrayLike, array_soc: Optional[npt.ArrayLike]) -> Self:
+        """
+        Initiates a Solution instance from the numpy arrays
+        :param array_t:
+        :param array_i:
+        :param array_v:
+        :param array_temp:
+        :param array_soc:
+        :return:
+        """
         return cls(array_t=array_t, array_I=array_i, array_V=array_v, array_temp=array_temp, array_soc=array_soc)
 
     @classmethod
@@ -57,7 +67,7 @@ class ECMSolution:
         plt.rc('axes', labelweight='bold')
         plt.rcParams['font.size'] = 15
 
-    def update(self, t: float, i_app: float, v: float, temp: float, soc: float) -> None:
+    def update(self, t: float, i_app: float, v: float, temp: float, soc: float, i_r1: float) -> None:
         """
         Updates the instance's arrays with the new data values
         :param t: time [s]
@@ -65,6 +75,7 @@ class ECMSolution:
         :param v: cell terminal potential [V]
         :param temp: cell surface temp. [K]
         :param soc: state-of-charge
+        :param i_r1: current across the R1 resistor [A].
         :return: None
         """
         self.__set_matplotlib_settings()
@@ -73,6 +84,7 @@ class ECMSolution:
         self.array_V = np.append(self.array_V, v)
         self.array_temp = np.append(self.array_temp, temp)
         self.array_soc = np.append(self.array_soc, soc)
+        self.array_I_R1 = np.append(self.array_I_R1, i_r1)
 
     def comprehensive_plot(self, sol_exp: Optional[Self] = None, save_dir: Optional[str]=None):
         fig = plt.figure(figsize=(6.4, 6), dpi=300)
