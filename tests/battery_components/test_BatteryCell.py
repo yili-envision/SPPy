@@ -91,18 +91,18 @@ class TestBatteryCell(unittest.TestCase):
 
 
 class TestECMBatteryCell(unittest.TestCase):
-    test_cell = SPPy.ECMBatteryCell(R0_ref=0.225, R1_ref=0.001, C1=0.03, T_ref=298.15, Ea_R1=400, Ea_R0=400,
-                                    rho=1626, Vol=3.38e-5, C_p=750, h=1, A=0.085,
-                                    func_eta=None, func_OCV=None, func_dOCVdT=None,
-                                    SOC_init=0.1, T_init=298.15,
-                                    cap=1.65, V_max=4.2, V_min=2.5)
+    test_cell = SPPy.ECMBatteryCell(R0_ref=0.225, R1_ref=0.001, C1=0.03, temp_ref=298.15, Ea_R1=400, Ea_R0=400,
+                                    rho=1626, vol=3.38e-5, c_p=750, h=1, area=0.085,
+                                    func_eta=None, func_ocv=None, func_docvdtemp=None,
+                                    soc_init=0.1, temp_init=298.15,
+                                    cap=1.65, v_max=4.2, v_min=2.5)
 
     def test_battery_cell_parameters(self):
         self.assertEqual(self.test_cell.rho, 1626)
-        self.assertEqual(self.test_cell.Vol, 3.38e-5)
-        self.assertEqual(self.test_cell.C_p, 750)
+        self.assertEqual(self.test_cell.vol, 3.38e-5)
+        self.assertEqual(self.test_cell.c_p, 750)
         self.assertEqual(self.test_cell.h, 1)
-        self.assertEqual(self.test_cell.A, 0.085)
+        self.assertEqual(self.test_cell.area, 0.085)
         self.assertEqual(self.test_cell.cap, 1.65)
-        self.assertEqual(self.test_cell.V_max, 4.2)
-        self.assertEqual(self.test_cell.V_min, 2.5)
+        self.assertEqual(self.test_cell.v_max, 4.2)
+        self.assertEqual(self.test_cell.v_min, 2.5)
