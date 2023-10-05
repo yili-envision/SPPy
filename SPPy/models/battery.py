@@ -99,6 +99,22 @@ class SPMe:
     doi: 10.1109/TCST.2016.2571663.
     """
     @classmethod
+    def molar_flux_electrode(cls, I: float, S: float, electrode_type: str) -> float:
+        """
+        Returns the area molar flux entering/exiting the electrode surface [mol/m2/s]
+        :param I:
+        :param S:
+        :param electrode_type:
+        :return:
+        """
+        if electrode_type == 'p':
+            return I / (Constants.F * S)
+        elif electrode_type == 'n':
+            return -I / (Constants.F * S)
+        else:
+            raise InvalidElectrodeType
+
+    @classmethod
     def volumetric_molar_fux(cls, I: float, S:float, electrode_type: str) -> float:
         return SPM.molar_flux_electrode(I=I, S=S, electrode_type=electrode_type)
 

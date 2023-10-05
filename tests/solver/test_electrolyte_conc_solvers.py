@@ -5,7 +5,8 @@ from SPPy.solvers.electrolyte_conc import ElectrolyteFVMCoordinates
 
 
 class TestElectrolyteFVMCoordinates(unittest.TestCase):
-    instance = ElectrolyteFVMCoordinates(L_n=8e-5, L_s=2.5e-5, L_p=8.8e-5)
+    instance = ElectrolyteFVMCoordinates(D_e=7.5e-10, epsilon_en=0.385, epsilon_esep=0.785, epsilon_ep=0.485,
+                                         L_n=8e-5, L_s=2.5e-5, L_p=8.8e-5, brugg=4)
 
     def test_array_xn(self):
         self.assertEqual(8e-5 / 10, self.instance.dx_n)
@@ -62,3 +63,9 @@ class TestElectrolyteFVMCoordinates(unittest.TestCase):
         self.assertEqual(self.instance.dx_p, self.instance.array_dx[25])
         self.assertEqual(self.instance.dx_p, self.instance.array_dx[-1])
         self.assertEqual(30, len(self.instance.array_dx))
+
+    def test_array_epsilon(self):
+        print(self.instance.array_epsilon_e)
+
+    def test_array_D_eff(self):
+        print(self.instance.array_D_eff)
