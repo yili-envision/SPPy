@@ -108,8 +108,11 @@ class ECMSolution:
         ax3 = fig.add_subplot(223)
         ax3.plot(x_axis, self.array_temp - 273.15, label='sim')
         if sol_exp is not None:
-            ax3.plot(sol_exp.array_t, sol_exp.array_temp - 273.15, label='exp')
-            ax3.legend()
+            try:
+                ax3.plot(sol_exp.array_t, sol_exp.array_temp - 273.15, label='exp')
+                ax3.legend()
+            except Exception as e:
+                print("could not plot the experimental temp.")
         ax3.set_xlabel('Time [s]')
         ax3.set_ylabel('Temp. [K]')
 

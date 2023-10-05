@@ -246,6 +246,7 @@ analysis/
 parameter_sets/for_sensitivity_analysis
 parameter_sets/Tesla
 #parameter_sets/Calce_NMC_18650
+parameter_sets/ennovate
 
 SPPy/gui
 SPPy/examples/isothermal/save_plots.py
