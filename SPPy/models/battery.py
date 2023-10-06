@@ -129,5 +129,35 @@ class SPMe:
         return 3 * epsilon / R
 
     @classmethod
-    def calc_terminal_voltage(cls):
-        pass
+    def exchange_current(cls, k: float, c_s_max: float, c_e: float, SOC_surf: float) -> float:
+        """
+        Calculates the exchange current density for an electrode.
+        :param k: rate constant [m2.5 / mol0.5 / s]
+        :param c_s_max: max. lithium-ion electrode conc. [mol/m3]
+        :param c_e: lithium-ion conc in the electrolyte [mol/m3]
+        :param SOC_surf: state-of-charge of the electrode particle surface
+        :return: (float) exchange current density [mol/m2/s]
+        """
+        return k * c_s_max * (c_e ** 0.5) * ((1 - SOC_surf) ** 0.5) * (SOC_surf ** 0.5)
+
+    @classmethod
+    def m(cls, k: float, c_s_max: float, c_e: float, SOC_surf: float,
+          active_area: float, i_app: float, electrode_type: str):
+        j = SPMe.molar_flux_electrode(I=i_app, S=active_area, electrode_type=electrode_type)
+        i_0 = SPMe.exchange_current(k=k, c_s_max=c_s_max, c_e=c_e, SOC_surf=SOC_surf)
+        return j / (2 * i_0)
+
+    @classmethod
+    def calc_terminal_voltage(cls, ocp_p: float, ocp_n: float,
+                              l_p: float, l_n: float, active_vol_p: float, active_vol_n: float,
+                              j_p: float, j_n: float,
+                              temp: float, i_app: float):
+        k_conc = (2 * Constants.R * temp / Constants.F) * (1-t_c) * k_f
+
+        term_v = (2 * Constants.R * temp / Constants.F) * np.arcsinh(m_p)
+        term_v -= (2 * Constants.R * temp / Constants.F) * np.arcsinh(m_n)
+        term_v += ocp_p - ocp_n
+        term_v -= (R_p/(a_p * L_p) + R_n/(a_n * L_n))
+        term_v += (L_p+2*L_sep+L_n) * i_app / (2*kappa_avg)
+        term_v += k_conc * (np.log(c_e_endterminal) - np.log(c_e_startterminal))
+        return term_v

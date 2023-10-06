@@ -123,7 +123,7 @@ class DTSolver(BaseSolver):
     def __solve_standard_cycling_step(self, cycler: BaseCycler, dt: float) -> ECMSolution:
         sol = ECMSolution()
         # update the initial values of sol object below
-        sol.update(t=0.0, i_app=0.0, v=self.b_cell.ocv, temp=self.b_cell.temp, soc=self.b_cell.soc)
+        sol.update(t=0.0, i_app=0.0, v=self.b_cell.ocv, temp=self.b_cell.temp, soc=self.b_cell.soc, i_r1=0.0)
         for cycle_no in tqdm.tqdm(range(cycler.num_cycles)):
             for step in cycler.cycle_steps:
                 t_prev = 0

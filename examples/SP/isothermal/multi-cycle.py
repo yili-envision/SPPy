@@ -20,7 +20,7 @@ cell = SPPy.BatteryCell(parameter_set_name='test', SOC_init_p=SOC_init_p, SOC_in
 # set-up cycler and solver
 cycler = SPPy.CC(num_cycles=num_cycles, charge_current=charge_current, discharge_current=discharge_current,
                  rest_time=rest_time, V_max=V_max, V_min=V_min)
-solver = SPPy.SPPySolver(b_cell= cell, N=5, isothermal=True, degradation=False)
+solver = SPPy.SPPySolver(b_cell=cell, N=5, isothermal=True, degradation=False)
 
 # simulate
 sol = solver.solve(cycler_instance=cycler)
