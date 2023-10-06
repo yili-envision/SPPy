@@ -127,3 +127,7 @@ class SPMe:
         :return: (float) electrode's interfacial surface area [m2/m3]
         """
         return 3 * epsilon / R
+
+    @classmethod
+    def calc_terminal_voltage(cls):
+        pass
