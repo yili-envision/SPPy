@@ -1,0 +1,85 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Electrode {
++ L: float
++ A: float
++ kappa: float
++ epsilon_s: float
++ epsilon_e: float
++ max_conc: float
++ R: float # Radius
++ S: Optional[float]
++ T_ref: float
++ D_ref: float
++ k_ref: float
++ Ea_D: float
++ Ea_R: float
++ alpha: float
++ brugg: float
++ SOC_init: float
++ T: float
++ a_s: float
+
++ OCP(): float
+}
+
+class Electrolyte {
++ L: float
++ D_e: float
++ epsilon_e: float
++ t_c: float
++ brugg: float
+}
+
+class BatteryCell {
+
+}
+
+class eSP {
++ molar_flux(...) -> float
++ i_0(...) -> float
++ eta(...) -> float
++ calc_terminal_voltage(...) -> float
+}
+
+class ElectrolyteFVMCoordinates {
++ D_e: float
+
++ epsilon_ep: float
++ epsilon_esep: float
++ epsilon_en: float
++ brugg: float
+
++ L_p: float
++ L_s: float
++ L_n: float
+
++ num_grid_p: int = 10
++ num_grid_s: int = 10
++ num_grid_n: int = 10
+
++ array_x_n: npt.ArrayLike
++ array_x_s: npt.ArrayLike
++ array_x_p: npt.ArrayLike
++ array_x: npt.ArrayLike
++ array_dx: npt.ArrayLike
++ array_epsilon_x: npt.ArrayLike
++ array_D_eff: npt.ArrayLike
++ array_a_s: npt.ArrayLike
++ array_kappa_eff: npt.ArrayLike
++ array_kappa_kf: npt.ArrayLike
+}
+
+class ElectrolyteConcFVMSolver {
++ diags()
++ M_ce()
++ ce_j_vec()
++ solve_ce()
+}
+
+class eSPSolver {
+
+}
+
+@enduml

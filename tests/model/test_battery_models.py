@@ -46,19 +46,48 @@ class TestSPModel(unittest.TestCase):
         self.assertEqual(3.8782812640647926, testmodel.calc_cell_terminal_voltage(OCP_p, OCP_n, m_p, m_n, R_cell, T=T, I=I))
 
 
-class TestSPMe(unittest.TestCase):
-    def test_flux_method(self):
-        I = -1.65  # m2
-        S_p = 1.1167  # m2
-        S_n = 0.7824  # m2
-        self.assertEqual(-I/(96487*S_n), battery.SPMe.volumetric_molar_fux(I=I, S=S_n, electrode_type='n'))
-        self.assertEqual(I/(96487*S_p), battery.SPMe.volumetric_molar_fux(I=I, S=S_p, electrode_type='p'))
+class TestESP(unittest.TestCase):
+    def test_molar_flux(self):
+        I = -1.656
+        S = 0.7824
+        self.assertEqual(2.1936265167099342e-05, battery.SPMe.molar_flux_electrode(I=I, S=S, electrode_type='n'))
+        self.assertEqual(-2.1936265167099342e-05, battery.SPMe.molar_flux_electrode(I=I, S=S, electrode_type='p'))
 
-    def test_as(self):
-        epsilon_n = 0.59
-        epsilon_p = 0.49
-        R_n = 1.25e-5
-        R_p = 8.5e-6
-        self.assertEqual(3 * epsilon_n / R_n, battery.SPMe.a_s(epsilon=epsilon_n, R=R_n))
-        self.assertEqual(3 * epsilon_p / R_p, battery.SPMe.a_s(epsilon=epsilon_p, R=R_p))
+    def test_i_0(self):
+        k = 1.764e-11
+        c_s_max = 31833
+        c_e = 1000
+        soc_surf = 0.5
+        self.assertEqual(8.878634015491551e-06, battery.SPMe.i_0(k=k, c_s_max=c_s_max, c_e=c_e, soc_surf=soc_surf))
+
+    def test_eta(self):
+        j = 2.1936265167099342e-05
+        i_0_ = 8.878634015491551e-06
+        temp = 298.15
+        self.assertEqual(0.05335777844201581, battery.SPMe.eta(temp=temp, j=j, i_0_=i_0_))
+
+    def test_calc_terminal_voltage(self):
+        ocp_p = 4.2
+        ocp_n = 0.15
+        eta_p = 0.05
+        eta_n = 0.05
+        l_p = 7.35E-05
+        l_sep = 2.00E-05
+        l_n = 7.00E-05
+        battery_cross_area = 0.0596
+        kappa_eff_avg = 0.2
+        t_c = 0.38
+        R_p = 0.0
+        R_n = 0.0
+        S_p = 1.1167
+        S_n = 0.7824
+        c_e_n = 1100
+        c_e_p = 900
+        i_app = -1.656
+
+        print(battery.SPMe.calc_terminal_voltage(ocp_p=ocp_p, ocp_n=ocp_n, eta_p=eta_p, eta_n=eta_n, l_p=l_p,
+                                                 l_sep=l_sep, l_n=l_n, battery_cross_area=battery_cross_area,
+                                                 kappa_eff_avg=kappa_eff_avg, t_c=t_c, R_p=R_p, R_n=R_n,
+                                                 S_p=S_p, S_n=S_n, c_e_n=c_e_n, c_e_p=c_e_p, i_app=i_app, k_f_avg=5,
+                                                 temp=298.15))
 

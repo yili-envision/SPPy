@@ -115,10 +115,6 @@ class SPMe:
             raise InvalidElectrodeType
 
     @classmethod
-    def volumetric_molar_fux(cls, I: float, S:float, electrode_type: str) -> float:
-        return SPM.molar_flux_electrode(I=I, S=S, electrode_type=electrode_type)
-
-    @classmethod
     def a_s(cls, epsilon: float, R: float) -> float:
         """
         Calculates the electrode's interfacial surface area [m2/m3]
@@ -129,7 +125,7 @@ class SPMe:
         return 3 * epsilon / R
 
     @classmethod
-    def exchange_current(cls, k: float, c_s_max: float, c_e: float, SOC_surf: float) -> float:
+    def i_0(cls, k: float, c_s_max: float, c_e: float, soc_surf: float) -> float:
         """
         Calculates the exchange current density for an electrode.
         :param k: rate constant [m2.5 / mol0.5 / s]
@@ -138,26 +134,31 @@ class SPMe:
         :param SOC_surf: state-of-charge of the electrode particle surface
         :return: (float) exchange current density [mol/m2/s]
         """
-        return k * c_s_max * (c_e ** 0.5) * ((1 - SOC_surf) ** 0.5) * (SOC_surf ** 0.5)
+        return k * c_s_max * (c_e ** 0.5) * ((1 - soc_surf) ** 0.5) * (soc_surf ** 0.5)
 
     @classmethod
-    def m(cls, k: float, c_s_max: float, c_e: float, SOC_surf: float,
-          active_area: float, i_app: float, electrode_type: str):
-        j = SPMe.molar_flux_electrode(I=i_app, S=active_area, electrode_type=electrode_type)
-        i_0 = SPMe.exchange_current(k=k, c_s_max=c_s_max, c_e=c_e, SOC_surf=SOC_surf)
-        return j / (2 * i_0)
+    def eta(cls, temp, j: float, i_0_: float) -> float:
+        """
+        Returns the overpotential of the electrode surface
+        :param temp: electrode temperature
+        :param j: molar flux [mol/m2/s]
+        :param i_0_: exchange current density [mol/m2/s]
+        :return:
+        """
+        return (2 * Constants.R * temp / Constants.F) * np.arcsinh(j/(2 * i_0_))
 
     @classmethod
-    def calc_terminal_voltage(cls, ocp_p: float, ocp_n: float,
-                              l_p: float, l_n: float, active_vol_p: float, active_vol_n: float,
-                              j_p: float, j_n: float,
+    def calc_terminal_voltage(cls, ocp_p: float, ocp_n: float, eta_p: float, eta_n: float,
+                              l_p: float, l_sep: float, l_n: float, battery_cross_area: float,
+                              kappa_eff_avg: float, k_f_avg: float, t_c: float,
+                              R_p: float, R_n: float,
+                              S_n: float, S_p: float,
+                              c_e_n: float, c_e_p: float,
                               temp: float, i_app: float):
-        k_conc = (2 * Constants.R * temp / Constants.F) * (1-t_c) * k_f
+        k_conc = (2 * Constants.R * temp / Constants.F) * (1-t_c) * k_f_avg
 
-        term_v = (2 * Constants.R * temp / Constants.F) * np.arcsinh(m_p)
-        term_v -= (2 * Constants.R * temp / Constants.F) * np.arcsinh(m_n)
-        term_v += ocp_p - ocp_n
-        term_v -= (R_p/(a_p * L_p) + R_n/(a_n * L_n))
-        term_v += (L_p+2*L_sep+L_n) * i_app / (2*kappa_avg)
-        term_v += k_conc * (np.log(c_e_endterminal) - np.log(c_e_startterminal))
+        term_v = eta_p - eta_n + ocp_p - ocp_n
+        term_v -= (R_p/(S_p) + R_n/(S_n)) * i_app
+        term_v += (l_p + 2*l_sep + l_n) * i_app / (2 * kappa_eff_avg * battery_cross_area)
+        term_v += k_conc * (np.log(c_e_p) - np.log(c_e_n))
         return term_v

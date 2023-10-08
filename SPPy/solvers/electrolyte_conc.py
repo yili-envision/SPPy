@@ -136,7 +136,7 @@ class ElectrolyteConcFVMSolver:
 
     def ce_j_vec(self, c_prev: npt.ArrayLike, j: npt.ArrayLike, dt: float, a_s: npt.ArrayLike) -> npt.ArrayLike:
         ce_j_vec_1_ = (c_prev * self.co_ords.array_epsilon_e).reshape(-1, 1)
-        ce_j_vec_2_ = ((1 - self.t_c) * a_s * j * dt).reshape(-1, 1)
+        ce_j_vec_2_ = ((1 - self.t_c) * a_s  * j * dt).reshape(-1, 1)
         return ce_j_vec_1_ + ce_j_vec_2_
 
     def solve_ce(self, c_prev: npt.ArrayLike, j: npt.ArrayLike, dt: float, a_s: npt.ArrayLike,
