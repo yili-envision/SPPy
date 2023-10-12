@@ -76,6 +76,14 @@ class Electrode:
             raise TypeError("func_dOCPdT needs to be a None or Function type")
 
     @property
+    def a_s(self) -> float:
+        """
+        Specific interfacial area [m2/m3]
+        :return: (float) specific interfacial area
+        """
+        return 3 * self.epsilon / self.R
+
+    @property
     def SOC(self):
         return self.SOC_
 

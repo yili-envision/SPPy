@@ -1,4 +1,7 @@
+from typing import Union
+
 import numpy as np
+import numpy.typing as npt
 
 
 def OCP_ref_p(SOC):
@@ -26,4 +29,19 @@ def dOCPdT_n(SOC):
           59431.30001 * SOC**4 - 195881.64880 * SOC**5 + 374577.31520 * SOC**6 - \
           385821.16070 * SOC**7 + 165705.85970 * SOC**8
     return (num/dem) * 1e-3 # since the original unit are of mV/K
+
+
+# def func_D_e(c_e: Union[float, npt.ArrayLike], temp: float) -> float:
+#     """
+#     Calculates the lithium-ion diffusivity in the electrolyte as a func of lithium-ion concentration and temperature
+#     Reference: Han et al. A numerically efficient method for solving the full-order pseudo-2D Li-ion cell model.
+#     2021. Journal of Power Sources. 490
+#
+#     :param c_e: lithium-ion concentration [mol/m3]
+#     :param temp: electrolyte temp [K]
+#     :return: (float) diffusivity of the lithium-ion [m2/s]
+#     """
+#     c_e = 0.001 * c_e  # in the original work the concentration was in mol/l
+#     return (10 ** (-4.43 - 54 / (temp - (229+5*c_e)) - 0.22 * c_e)) * 1e-4  # the original D_e was in cm2/s
+
 

@@ -10,6 +10,7 @@ __status__ = 'deployed'
 
 
 from dataclasses import dataclass
+from typing import Callable, Optional
 
 
 @dataclass
@@ -22,6 +23,7 @@ class Electrolyte:
     kappa: float  # ionic conductivity, S/m
     epsilon: float  # electrolyte volume fraction
     brugg: float  # Bruggerman coefficient for electrolyte
+    func_D_e: Optional[Callable] = None
 
     def __post_init__(self):
         # Check for types of the input parameters

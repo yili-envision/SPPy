@@ -93,6 +93,12 @@ class ParameterSets:
         self.dOCPdT_p_ = func_module.dOCPdT_p
         self.OCP_ref_n_ = func_module.OCP_ref_n
         self.dOCPdT_n_ = func_module.dOCPdT_n
+        # containing the electrolyte related fuctions in the parameter set below.
+        try:
+            self.func_D_e_ = func_module.func_D_e
+        except AttributeError as e:
+            print('No electrolyte related functions found in the parameter set.')
+            self.func_D_e_ = None
 
     @classmethod
     def list_parameters_sets(cls):

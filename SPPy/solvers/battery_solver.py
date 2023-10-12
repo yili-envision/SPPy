@@ -2,10 +2,11 @@ __author__ = 'Moin Ahmed'
 __copywrite__ = 'Copywrite 2023 by Moin Ahmed. All rights are reserved.'
 __status__ = 'deployed'
 
-
 import numpy as np
+import numpy.typing as npt
 from tqdm import tqdm
 
+from SPPy.battery_components.battery_cell import BatteryCell
 from SPPy.solvers.base import BaseSolver, timer
 from SPPy.calc_helpers import ode_solvers
 from SPPy.sol_and_visualization.solution import SolutionInitializer, Solution
@@ -15,6 +16,9 @@ from SPPy.warnings_and_exceptions.custom_exceptions import *
 from SPPy.solvers.electrode_surf_conc import EigenFuncExp, CNSolver, PolynomialApproximation
 from SPPy.models.thermal import Lumped
 from SPPy.solvers.degradation_solvers import ROMSEISolver
+
+from SPPy.models.battery import SPMe
+from SPPy.solvers.electrolyte_conc import ElectrolyteFVMCoordinates, ElectrolyteConcFVMSolver
 
 from SPPy.cycler.base import BaseCycler
 from SPPy.cycler.discharge import CustomDischarge
@@ -245,7 +249,7 @@ class SPPySolver(BaseSolver):
                                          cap=cap,
                                          cap_charge=cap_charge,
                                          cap_discharge=cap_discharge,
-                                         SOC_LIB= cycler.SOC_LIB,
+                                         SOC_LIB=cycler.SOC_LIB,
                                          battery_cap=self.b_cell.cap,
                                          temp=self.b_cell.T,
                                          R_cell=self.b_cell.R_cell)
@@ -277,7 +281,7 @@ class SPPySolver(BaseSolver):
             t_curr += t_increment
             dt = t_curr - t_prev
 
-            I = custom_cycler_instance.get_current(step_name=custom_cycler_instance.cycle_steps[0],t=t_curr)
+            I = custom_cycler_instance.get_current(step_name=custom_cycler_instance.cycle_steps[0], t=t_curr)
 
             # All simulations parameters and battery cell attributes updates are done the in the code block
             # below.
@@ -333,3 +337,52 @@ class SPPySolver(BaseSolver):
                 self.sol_init.lst_j_s.append(self.SEI_model.J_s)
 
         return Solution(base_solution_instance=self.sol_init, name=sol_name, save_csv_dir=save_csv_dir)
+
+
+class eSPSolver(BaseSolver):
+    """
+    Solver for performing simulations using single-particle model with electrolyte dynamics.
+    """
+
+    def __init__(self, b_cell: BatteryCell, isothermal: bool, degradation: bool, electrode_soc_solver: str = 'poly'):
+        super().__init__(b_cell=b_cell, isothermal=isothermal, degradation=degradation,
+                         electrode_SOC_solver=electrode_soc_solver)
+
+        if electrode_soc_solver == 'poly':
+            self.soc_solver_p = PolynomialApproximation(c_init=self.b_cell.elec_p.SOC * self.b_cell.elec_p.max_conc,
+                                                        electrode_type='p')
+            self.soc_solver_n = PolynomialApproximation(c_init=self.b_cell.elec_n.SOC * self.b_cell.elec_n.max_conc,
+                                                        electrode_type='n')
+
+    def solve_one_iteration(self):
+        pass
+
+    def solver(self, cycling_step: BaseCycler, dt: float = 0.1) -> npt.ArrayLike:
+        step_completed: bool = False
+
+        t_prev = 0
+        for cycle_no in cycling_step.num_cycles:
+            for step in cycling_step.cycle_steps:
+                while not step_completed:
+                    t_curr = t_prev + dt
+                    i_app = cycling_step.get_current(step_name=step, t=t_curr)
+
+                    # Calculate the electrode flux below
+                    j_p = SPMe.molar_flux_electrode(I=i_app, S=self.b_cell.elec_p.S, electrode_type='p')
+                    j_n = SPMe.molar_flux_electrode(I=i_app, S=self.b_cell.elec_n.S, electrode_type='n')
+
+                    # Solve for electrode SOC below
+                    self.b_cell.elec_p.SOC = self.SOC_solver_p(dt=dt, t_prev=t_prev, i_app=i_app,
+                                                               R=self.b_cell.elec_p.R,
+                                                               S=self.b_cell.elec_p.S,
+                                                               D_s=self.b_cell.elec_p.D,
+                                                               c_smax=self.b_cell.elec_p.max_conc)  # calc p surf SOC
+                    self.b_cell.elec_n.SOC = self.SOC_solver_n(dt=dt, t_prev=t_prev, i_app=i_app,
+                                                               R=self.b_cell.elec_n.R,
+                                                               S=self.b_cell.elec_n.S,
+                                                               D_s=self.b_cell.elec_n.D,
+                                                               c_smax=self.b_cell.elec_n.max_conc)  # calc n surf SOC
+
+                    # Solve for the electrolyte conc. below
+                    # electrolyte_co_ord = ElectrolyteFVMCoordinates(D_e=self.b_cell.electrolyte.D)
+

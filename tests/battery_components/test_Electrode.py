@@ -36,6 +36,8 @@ class testElectrode(unittest.TestCase):
         """
         self.assertEqual(self.L, self.elec.L)
 
+    def test_electrode_properties(self):
+        self.assertAlmostEqual(172941.17647058822, self.elec.a_s)
 
     def test_invalid_SOC_init(self):
         """
